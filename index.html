@@ -1,0 +1,768 @@
+.<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>عجلة الحظ - Wheel of Fortune</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .header {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        h1 {
+            color: #FFD700;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+        
+        .subtitle {
+            color: #b0b0b0;
+            font-size: 1.1rem;
+        }
+        
+        .status-box {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px solid #FFD700;
+        }
+        
+        .wheel-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            margin: 30px auto;
+        }
+        
+        #wheelCanvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            box-shadow: 0 0 50px rgba(255, 215, 0, 0.3);
+            background: radial-gradient(circle, #2c3e50 0%, #1a1a2e 100%);
+        }
+        
+        .pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 60px;
+            z-index: 10;
+        }
+        
+        .pointer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 30px solid #FFD700;
+        }
+        
+        .controls {
+            margin: 30px 0;
+        }
+        
+        .spin-btn {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #1a1a2e;
+            border: none;
+            padding: 20px 60px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.4);
+        }
+        
+        .spin-btn:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(255, 215, 0, 0.6);
+        }
+        
+        .spin-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .prizes-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 30px 0;
+        }
+        
+        .prize-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .prize-item.winning {
+            background: rgba(0, 255, 0, 0.2);
+            border: 2px solid #00FF00;
+        }
+        
+        .prize-image {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 10px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid #FFD700;
+        }
+        
+        .prize-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .prize-name {
+            font-weight: bold;
+            color: #FFD700;
+            font-size: 1.2rem;
+        }
+        
+        .prize-percentage {
+            color: #b0b0b0;
+            font-size: 0.9rem;
+        }
+        
+        .result {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            z-index: 100;
+            display: none;
+            border: 3px solid #FFD700;
+            max-width: 500px;
+            width: 90%;
+        }
+        
+        .result.active {
+            display: block;
+            animation: popIn 0.5s ease;
+        }
+        
+        @keyframes popIn {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+        
+        .result-title {
+            color: #FFD700;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+        
+        .result-prize {
+            font-size: 2.5rem;
+            color: #00FF00;
+            margin: 20px 0;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+        
+        .result-message {
+            color: #b0b0b0;
+            margin: 20px 0;
+            font-size: 1.1rem;
+        }
+        
+        .close-btn {
+            background: #FF4444;
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-size: 1rem;
+        }
+        
+        .loading {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 1000;
+        }
+        
+        .loading.active {
+            display: block;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #FFD700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .history-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        
+        .telegram-info {
+            background: rgba(29, 161, 242, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border: 1px solid rgba(29, 161, 242, 0.5);
+        }
+        
+        @media (max-width: 768px) {
+            .wheel-container {
+                width: 300px;
+                height: 300px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .spin-btn {
+                padding: 15px 40px;
+                font-size: 1.2rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .wheel-container {
+                width: 250px;
+                height: 250px;
+            }
+            
+            .prizes-info {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎡 عجلة الحظ 🎡</h1>
+            <p class="subtitle">قم بتدوير العجلة واربح جوائز مذهلة!</p>
+        </div>
+        
+        <div id="statusBox" class="status-box">
+            <p>جاري التحقق من أهلية الدوران...</p>
+        </div>
+        
+        <div class="wheel-container">
+            <div class="pointer"></div>
+            <canvas id="wheelCanvas"></canvas>
+        </div>
+        
+        <div class="controls">
+            <button id="spinButton" class="spin-btn" disabled>
+                🎡 تدوير العجلة
+            </button>
+        </div>
+        
+        <div class="prizes-info" id="prizesContainer">
+            <!-- سيتم تعبئة الجوائز هنا -->
+        </div>
+        
+        <div class="telegram-info">
+            <p>🚀 هذه العجلة متصلة مع بوت تلغرام</p>
+            <p>💬 سيتم إرسال نتائج الدوران إليك على الخاص</p>
+        </div>
+        
+        <button id="historyButton" class="history-btn">📜 مشاهدة سجل الدورانات</button>
+    </div>
+    
+    <div id="resultPopup" class="result">
+        <h2 class="result-title">🎊 نتيجة الدوران 🎊</h2>
+        <div class="result-prize" id="resultPrize"></div>
+        <p class="result-message" id="resultMessage"></p>
+        <button id="closeResult" class="close-btn">إغلاق</button>
+    </div>
+    
+    <div id="historyPopup" class="result">
+        <h2 class="result-title">📜 سجل الدورانات</h2>
+        <div id="historyList" style="max-height: 300px; overflow-y: auto; margin: 20px 0;"></div>
+        <button id="closeHistory" class="close-btn">إغلاق</button>
+    </div>
+    
+    <div id="loading" class="loading">
+        <div class="spinner"></div>
+        <p>جاري المعالجة...</p>
+    </div>
+    
+    <script>
+        // إعدادات API
+        const API_URL = "https://script.google.com/macros/s/AKfycbywV1OLCgWiYssodOg-3ImUpyvnxhwM8_9fwLdx0gkUjH-m4BL_PniqqqBUge0loFM/exec"; // استبدل برابط نشر Google Apps Script
+        const TELEGRAM_USER_ID = new URLSearchParams(window.location.search).get('user_id') || localStorage.getItem('telegram_user_id');
+        
+        // قائمة الجوائز
+        const prizes = [
+            { name: "5000", percentage: 2, color: "#FF6B6B", image: "https://i.postimg.cc/DZGZhf6w/IMG-20260129-003520.jpg" },
+            { name: "10000", percentage: 1, color: "#4ECDC4", image: "https://i.postimg.cc/DZGZhf6w/IMG-20260129-003520.jpg" },
+            { name: "25000", percentage: 0.5, color: "#FFD166", image: "https://i.postimg.cc/DZGZhf6w/IMG-20260129-003520.jpg" },
+            { name: "لفة مجانية", percentage: 0.5, color: "#06D6A0", image: "https://i.postimg.cc/DZGZhf6w/IMG-20260129-003520.jpg" },
+            { name: "حظ أوفر", percentage: 96, color: "#118AB2", image: "https://i.postimg.cc/DZGZhf6w/IMG-20260129-003520.jpg" }
+        ];
+        
+        // متغيرات العجلة
+        let wheel = null;
+        let isSpinning = false;
+        let currentAngle = 0;
+        let isEligible = false;
+        let nextSpinTime = null;
+        
+        // عناصر DOM
+        const wheelCanvas = document.getElementById('wheelCanvas');
+        const spinButton = document.getElementById('spinButton');
+        const statusBox = document.getElementById('statusBox');
+        const prizesContainer = document.getElementById('prizesContainer');
+        const resultPopup = document.getElementById('resultPopup');
+        const resultPrize = document.getElementById('resultPrize');
+        const resultMessage = document.getElementById('resultMessage');
+        const closeResult = document.getElementById('closeResult');
+        const loading = document.getElementById('loading');
+        const historyButton = document.getElementById('historyButton');
+        const historyPopup = document.getElementById('historyPopup');
+        const historyList = document.getElementById('historyList');
+        const closeHistory = document.getElementById('closeHistory');
+        
+        // تهيئة الصفحة
+        document.addEventListener('DOMContentLoaded', async function() {
+            if (!TELEGRAM_USER_ID) {
+                showError("❌ لم يتم العثور على معرف المستخدم. الرجاء الدخول عبر بوت تلغرام.");
+                return;
+            }
+            
+            // حفظ معرف المستخدم
+            localStorage.setItem('telegram_user_id', TELEGRAM_USER_ID);
+            
+            // رسم العجلة
+            drawWheel();
+            
+            // التحقق من الأهلية
+            await checkEligibility();
+            
+            // عرض الجوائز
+            displayPrizes();
+            
+            // إعداد المستمعين للأحداث
+            setupEventListeners();
+        });
+        
+        // رسم عجلة الحظ
+        function drawWheel() {
+            const ctx = wheelCanvas.getContext('2d');
+            const centerX = wheelCanvas.width / 2;
+            const centerY = wheelCanvas.height / 2;
+            const radius = Math.min(centerX, centerY) - 10;
+            
+            // حساب الزاوية لكل جائزة
+            const totalPercentage = prizes.reduce((sum, prize) => sum + prize.percentage, 0);
+            let startAngle = 0;
+            
+            // رسم خلفية العجلة
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fill();
+            ctx.lineWidth = 5;
+            ctx.strokeStyle = '#FFD700';
+            ctx.stroke();
+            
+            // رسم الأقسام
+            prizes.forEach((prize, index) => {
+                const sliceAngle = (prize.percentage / totalPercentage) * Math.PI * 2;
+                const endAngle = startAngle + sliceAngle;
+                
+                // رسم القسم
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.closePath();
+                
+                // تدرج الألوان
+                const gradient = ctx.createLinearGradient(
+                    centerX + Math.cos(startAngle) * radius,
+                    centerY + Math.sin(startAngle) * radius,
+                    centerX + Math.cos(endAngle) * radius,
+                    centerY + Math.sin(endAngle) * radius
+                );
+                
+                gradient.addColorStop(0, prize.color);
+                gradient.addColorStop(1, adjustColor(prize.color, -30));
+                
+                ctx.fillStyle = gradient;
+                ctx.fill();
+                ctx.strokeStyle = '#FFFFFF';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // إضافة صورة الجائزة
+                const midAngle = startAngle + sliceAngle / 2;
+                const imageRadius = radius * 0.7;
+                const imageX = centerX + Math.cos(midAngle) * imageRadius;
+                const imageY = centerY + Math.sin(midAngle) * imageRadius;
+                const imageSize = radius * 0.15;
+                
+                // إنشاء صورة
+                const img = new Image();
+                img.src = prize.image;
+                img.onload = function() {
+                    ctx.save();
+                    ctx.translate(imageX, imageY);
+                    ctx.rotate(midAngle + Math.PI / 2);
+                    ctx.drawImage(img, -imageSize/2, -imageSize/2, imageSize, imageSize);
+                    ctx.restore();
+                };
+                
+                // إضافة نص الجائزة
+                ctx.save();
+                ctx.translate(centerX + Math.cos(midAngle) * (radius * 0.4), 
+                              centerY + Math.sin(midAngle) * (radius * 0.4));
+                ctx.rotate(midAngle + Math.PI / 2);
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = 'bold 16px Arial';
+                ctx.fillText(prize.name, 0, 0);
+                ctx.restore();
+                
+                startAngle = endAngle;
+            });
+            
+            // إضافة مركز العجلة
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius * 0.1, 0, Math.PI * 2);
+            ctx.fillStyle = '#FFD700';
+            ctx.fill();
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.stroke();
+        }
+        
+        // تعديل اللون
+        function adjustColor(color, amount) {
+            let usePound = false;
+            if (color[0] === "#") {
+                color = color.slice(1);
+                usePound = true;
+            }
+            
+            const num = parseInt(color, 16);
+            let r = (num >> 16) + amount;
+            let b = ((num >> 8) & 0x00FF) + amount;
+            let g = (num & 0x0000FF) + amount;
+            
+            r = Math.min(Math.max(0, r), 255);
+            b = Math.min(Math.max(0, b), 255);
+            g = Math.min(Math.max(0, g), 255);
+            
+            return (usePound ? "#" : "") + (g | (b << 8) | (r << 16)).toString(16).padStart(6, '0');
+        }
+        
+        // التحقق من أهلية المستخدم
+        async function checkEligibility() {
+            showLoading();
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'check_eligibility',
+                        user_id: TELEGRAM_USER_ID
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.eligible) {
+                    isEligible = true;
+                    spinButton.disabled = false;
+                    statusBox.innerHTML = `
+                        <p style="color: #00FF00;">✅ ${data.message}</p>
+                        <p style="color: #FFD700; margin-top: 10px;">🎁 لديك فرصة واحدة للدوران!</p>
+                    `;
+                } else {
+                    isEligible = false;
+                    spinButton.disabled = true;
+                    
+                    if (data.nextSpinTime) {
+                        const nextSpin = new Date(data.nextSpinTime);
+                        const now = new Date();
+                        const diffMs = nextSpin - now;
+                        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                        const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                        
+                        statusBox.innerHTML = `
+                            <p style="color: #FF6B6B;">⏰ ${data.message}</p>
+                            <p style="color: #FFD700; margin-top: 10px;">
+                                الوقت المتبقي: ${diffHours} ساعة و ${diffMinutes} دقيقة
+                            </p>
+                        `;
+                    } else {
+                        statusBox.innerHTML = `<p style="color: #FF6B6B;">❌ ${data.message}</p>`;
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking eligibility:', error);
+                statusBox.innerHTML = `<p style="color: #FF4444;">❌ فشل الاتصال بالخادم. الرجاء المحاولة لاحقاً.</p>`;
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        // عرض الجوائز
+        function displayPrizes() {
+            prizesContainer.innerHTML = '';
+            
+            prizes.forEach(prize => {
+                const prizeElement = document.createElement('div');
+                prizeElement.className = 'prize-item';
+                prizeElement.innerHTML = `
+                    <div class="prize-image">
+                        <img src="${prize.image}" alt="${prize.name}">
+                    </div>
+                    <div class="prize-name">${prize.name}</div>
+                    <div class="prize-percentage">نسبة الفوز: ${prize.percentage}%</div>
+                    <div style="height: 10px; background: #333; border-radius: 5px; margin-top: 5px;">
+                        <div style="width: ${prize.percentage}%; height: 100%; background: ${prize.color}; border-radius: 5px;"></div>
+                    </div>
+                `;
+                prizesContainer.appendChild(prizeElement);
+            });
+        }
+        
+        // تدوير العجلة
+        async function spinWheel() {
+            if (isSpinning || !isEligible) return;
+            
+            showLoading();
+            isSpinning = true;
+            spinButton.disabled = true;
+            
+            try {
+                // إرسال طلب التدوير
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'spin_wheel',
+                        user_id: TELEGRAM_USER_ID
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // عرض نتيجة الدوران
+                    showResult(data.prize);
+                    
+                    // تحديث الأهلية
+                    await checkEligibility();
+                    
+                    // إظهار رسالة النجاح
+                    setTimeout(() => {
+                        alert('🎉 تم إرسال نتيجة الدوران إلى حسابك على تلغرام!\n💬 تحقق من رسائل البوت الخاصة.');
+                    }, 1000);
+                } else {
+                    showError('فشل في تدوير العجلة. الرجاء المحاولة مرة أخرى.');
+                }
+            } catch (error) {
+                console.error('Error spinning wheel:', error);
+                showError('فشل الاتصال بالخادم. الرجاء المحاولة لاحقاً.');
+            } finally {
+                isSpinning = false;
+                hideLoading();
+            }
+        }
+        
+        // عرض نتيجة الدوران
+        function showResult(prize) {
+            resultPrize.textContent = prize.name;
+            
+            if (prize.name === "حظ أوفر") {
+                resultMessage.textContent = "عذراً! حظاً أوفر في المرة القادمة 🍀";
+                resultPrize.style.color = "#FF6B6B";
+            } else {
+                resultMessage.textContent = "🎉 مبروك! تم إرسال جائزتك إلى حسابك على تلغرام.\n💬 تحقق من رسائل البوت لتفعيل الجائزة.";
+                resultPrize.style.color = "#00FF00";
+            }
+            
+            resultPopup.classList.add('active');
+        }
+        
+        // إظهار رسالة خطأ
+        function showError(message) {
+            statusBox.innerHTML = `<p style="color: #FF4444;">❌ ${message}</p>`;
+        }
+        
+        // إظهار/إخفاء التحميل
+        function showLoading() {
+            loading.classList.add('active');
+        }
+        
+        function hideLoading() {
+            loading.classList.remove('active');
+        }
+        
+        // إعداد مستمعي الأحداث
+        function setupEventListeners() {
+            spinButton.addEventListener('click', spinWheel);
+            
+            closeResult.addEventListener('click', () => {
+                resultPopup.classList.remove('active');
+            });
+            
+            historyButton.addEventListener('click', async () => {
+                await showHistory();
+            });
+            
+            closeHistory.addEventListener('click', () => {
+                historyPopup.classList.remove('active');
+            });
+            
+            // إغلاق النوافذ بالنقر خارجها
+            document.addEventListener('click', (e) => {
+                if (e.target === resultPopup) {
+                    resultPopup.classList.remove('active');
+                }
+                if (e.target === historyPopup) {
+                    historyPopup.classList.remove('active');
+                }
+            });
+            
+            // تحديث حجم العجلة عند تغيير حجم النافذة
+            window.addEventListener('resize', () => {
+                drawWheel();
+            });
+        }
+        
+        // عرض سجل الدورانات
+        async function showHistory() {
+            showLoading();
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'get_spin_history',
+                        user_id: TELEGRAM_USER_ID
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.history.length > 0) {
+                    historyList.innerHTML = data.history.map(history => `
+                        <div style="background: rgba(255,255,255,0.1); padding: 10px; margin: 5px 0; border-radius: 5px;">
+                            <div style="color: ${history.prize === 'حظ أوفر' ? '#FF6B6B' : '#00FF00'}; font-weight: bold;">
+                                ${history.prize}
+                            </div>
+                            <div style="color: #b0b0b0; font-size: 0.9rem;">
+                                ${new Date(history.date).toLocaleString('ar-SA')}
+                            </div>
+                            <div style="color: #FFD700; font-size: 0.8rem;">
+                                نسبة الفوز: ${history.percentage}% | الحالة: ${history.status}
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    historyList.innerHTML = '<p style="color: #b0b0b0; text-align: center;">لا توجد دورانات سابقة</p>';
+                }
+                
+                historyPopup.classList.add('active');
+            } catch (error) {
+                console.error('Error fetching history:', error);
+                historyList.innerHTML = '<p style="color: #FF4444;">فشل تحميل السجل</p>';
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        // إضافة مؤثرات صوتية (اختياري)
+        function playSpinSound() {
+            const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-spinning-wheel-909.mp3');
+            audio.play().catch(e => console.log('Audio play failed:', e));
+        }
+        
+        function playWinSound() {
+            const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3');
+            audio.play().catch(e => console.log('Audio play failed:', e));
+        }
+        
+        function playLoseSound() {
+            const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-cartoon-falling-whistle-392.mp3');
+            audio.play().catch(e => console.log('Audio play failed:', e));
+        }
+    </script>
+</body>
+</html>
