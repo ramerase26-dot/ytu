@@ -29,7 +29,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: var(--background-color) url('https://i.postimg.cc/wB7MWQsq/IMG-20260129-003341-890.jpg') no-repeat center center fixed;
+            background: var(--background-color) url('https://i.postimg.cc/25nxW1Z0/827e4300-fc63-11f0-bb2f-2bee84f2009e.png') no-repeat center center fixed;
             background-size: cover;
             color: var(--text-color);
             min-height: 100vh;
@@ -236,14 +236,6 @@
             opacity: 1;
             visibility: visible;
         }
-
-        /* إضافة لعرض الصورة في النتيجة */
-        .prize-image {
-            width: 100px;
-            height: 100px;
-            margin: 20px auto;
-            object-fit: contain;
-        }
     </style>
 </head>
 <body>
@@ -265,7 +257,6 @@
     <div class="result-popup" id="resultPopup">
         <div class="result-content">
             <h2>مبروك!</h2>
-            <img id="prizeImage" class="prize-image" src="" alt="الجائزة">
             <div class="prize-text" id="winPrize"></div>
             <div id="resultMessage"></div>
             <button class="close-btn" id="closeBtn">إغلاق</button>
@@ -279,16 +270,15 @@
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbzxt3bMqeoBXFVDhz88rzudS2GpNUDxFNGmTdF11HAlSMsB0WLXr8rohjTDXMYyXRciiw/exec";
         
-        // تحديث المصفوفة لتشمل روابط الصور
         const prizes = [
-            { name: "خط أورف", probability: 17, image: "https://i.postimg.cc/DZGZhf6w/IMG-20260129-003520.jpg" },
-            { name: "خط أورف", probability: 20, image: "https://i.postimg.cc/DZGZhf6w/IMG-20260129-003520.jpg" },
-            { name: "خط أورف", probability: 20, image: "https://i.postimg.cc/DZGZhf6w/IMG-20260129-003520.jpg" },
-            { name: "خط أورف", probability: 20, image: "https://i.postimg.cc/DZGZhf6w/IMG-20260129-003520.jpg" },
-            { name: "خط أورف", probability: 20, image: "https://i.postimg.cc/DZGZhf6w/IMG-20260129-003520.jpg" },
-            { name: "30", probability: 1, image: "https://i.postimg.cc/DZGZhf6w/IMG-20260129-003520.jpg" },
-            { name: "50", probability: 1, image: "https://i.postimg.cc/DZGZhf6w/IMG-20260129-003520.jpg" },
-            { name: "20", probability: 1, image: "https://i.postimg.cc/DZGZhf6w/IMG-20260129-003520.jpg" }
+            { name: "خط أورف", probability: 17 },
+            { name: "خط أورف", probability: 20 },
+            { name: "خط أورف", probability: 20 },
+            { name: "خط أورف", probability: 20 },
+            { name: "خط أورف", probability: 20 },
+            { name: "30", probability: 1 },
+            { name: "50", probability: 1 },
+            { name: "20", probability: 1 }
         ];
         
         const colors = ["#8B4513", "#ffffff"];
@@ -296,6 +286,7 @@
         // --- عناصر DOM --- //
         const elements = {
             wheel: document.getElementById('wheel'),
+            prizeDisplay: document.getElementById('prizeDisplay'),
             spinBtn: document.getElementById('spinBtn'),
             timerEl: document.getElementById('timer'),
             statusEl: document.getElementById('status'),
@@ -304,8 +295,9 @@
             closeBtn: document.getElementById('closeBtn'),
             loadingOverlay: document.getElementById('loadingOverlay'),
             loadingText: document.getElementById('loadingText'),
+            errorMessage: document.getElementById('errorMessage'),
             resultMessage: document.getElementById('resultMessage'),
-            prizeImage: document.getElementById('prizeImage')
+            rateLimitMessage: document.getElementById('rateLimitMessage')
         };
         
         const ctx = elements.wheel.getContext('2d');
@@ -318,10 +310,6 @@
         let timerInterval = null;
         let wheelImage = null;
         let isRateLimited = false;
-        
-        // متغيرات الصور
-        let prizeImages = [];
-        let imagesLoaded = 0;
         
         // --- وظائف الواجهة --- //
         const showLoading = (text) => {
@@ -367,29 +355,6 @@
         };
         
         // --- وظائف العجلة --- //
-        const loadImages = () => {
-            return new Promise((resolve) => {
-                prizes.forEach((prize, index) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        imagesLoaded++;
-                        if (imagesLoaded === prizes.length) {
-                            resolve();
-                        }
-                    };
-                    img.onerror = () => {
-                        console.warn(`Failed to load image for prize: ${prize.name}`);
-                        imagesLoaded++;
-                        if (imagesLoaded === prizes.length) {
-                            resolve();
-                        }
-                    };
-                    img.src = prize.image;
-                    prizeImages[index] = img;
-                });
-            });
-        };
-        
         const drawWheel = () => {
             const centerX = elements.wheel.width / 2;
             const centerY = elements.wheel.height / 2;
@@ -413,35 +378,13 @@
                 ctx.lineWidth = 2;
                 ctx.stroke();
                 
-                // حفظ حالة الـ Canvas للرسم
                 ctx.save();
                 ctx.translate(centerX, centerY);
                 ctx.rotate(startAngle + sliceAngle / 2);
-                
-                // رسم الصورة بدلاً من النص
-                const img = prizeImages[i];
-                if (img && img.complete) {
-                    const imgSize = 40; // حجم الصورة
-                    const imgX = radius - 55; // موضع الصورة
-                    const imgY = -imgSize / 2;
-                    
-                    // رسم خلفية بيضاء للصورة إذا كانت الخلفية بنية
-                    if (colors[i % colors.length] === "#8B4513") {
-                        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-                        ctx.beginPath();
-                        ctx.arc(imgX + imgSize/2, 0, imgSize/2 + 5, 0, Math.PI * 2);
-                        ctx.fill();
-                    }
-                    
-                    ctx.drawImage(img, imgX, imgY, imgSize, imgSize);
-                } else {
-                    // إذا فشل تحميل الصورة، استخدم النص كبديل
-                    ctx.textAlign = 'right';
-                    ctx.fillStyle = colors[i % colors.length] === "#8B4513" ? '#FFF' : '#000';
-                    ctx.font = 'bold 16px Arial';
-                    ctx.fillText(prizes[i].name, radius - 20, 5);
-                }
-                
+                ctx.textAlign = 'right';
+                ctx.fillStyle = '#000';
+                ctx.font = 'bold 16px Arial';
+                ctx.fillText(prizes[i].name, radius - 20, 5);
                 ctx.restore();
             }
         };
@@ -461,20 +404,18 @@
             const totalRotation = currentRotation + targetAngle;
             
             elements.wheel.style.transform = `rotate(${totalRotation}deg)`;
+            elements.prizeDisplay.textContent = "جاري التدوير...";
             
-            elements.wheel.addEventListener('transitionend', () => onSpinEnd(prize), { once: true });
+            elements.wheel.addEventListener('transitionend', () => onSpinEnd(prize.name), { once: true });
         };
         
         const onSpinEnd = async (finalPrize) => {
             isSpinning = false;
+            elements.prizeDisplay.textContent = finalPrize;
             
-            // عرض الصورة في النافذة المنبثقة
-            elements.prizeImage.src = finalPrize.image;
-            elements.winPrize.textContent = finalPrize.name;
+            const data = await apiCall('save_spin', { user_id: userId, prize: finalPrize });
             
-            const data = await apiCall('save_spin', { user_id: userId, prize: finalPrize.name });
-            
-            if (finalPrize.name === "خط أورف") {
+            if (finalPrize === "خط أورف") {
                 elements.resultMessage.textContent = "حظ أوفر في المرة القادمة!";
                 showResult(finalPrize);
             } else if (data && data.success) {
@@ -499,8 +440,7 @@
         };
         
         const showResult = (prize) => {
-            elements.winPrize.textContent = prize.name;
-            elements.prizeImage.src = prize.image;
+            elements.winPrize.textContent = prize;
             elements.resultPopup.classList.add('show');
         };
         
@@ -571,13 +511,10 @@
         const init = async () => {
             showLoading("جاري تهيئة التطبيق...");
             
+            // رسم العجلة باستخدام Canvas
+            drawWheel();
+            
             try {
-                // تحميل الصور أولاً
-                await loadImages();
-                
-                // رسم العجلة باستخدام Canvas
-                drawWheel();
-                
                 // جلب المعلمات من رابط URL
                 const urlParams = new URLSearchParams(window.location.search);
                 const userStateParam = urlParams.get('eligible'); // 'true' أو 'false'
@@ -586,12 +523,13 @@
                 const isEligible = userStateParam === 'true';
                 
                 if (!isEligible) {
+                    // إذا كان المستخدم غير مؤهل
                     elements.spinBtn.disabled = true;
                     elements.spinBtn.textContent = "غير مؤهل";
                     elements.statusEl.textContent = "غير مؤهل للمشاركة";
                     elements.timerEl.textContent = "";
                     hideLoading();
-                    return;
+                    return; // إيقاف التهيئة هنا
                 }
 
                 if (window.Telegram && window.Telegram.WebApp) {
