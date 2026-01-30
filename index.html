@@ -29,7 +29,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: var(--background-color) url('https://i.postimg.cc/wB7MWQsq/IMG-20260129-003341-890.jpg') no-repeat center center fixed;
+            background: var(--background-color) url('https://i.postimg.cc/25nxW1Z0/827e4300-fc63-11f0-bb2f-2bee84f2009e.png') no-repeat center center fixed;
             background-size: cover;
             color: var(--text-color);
             min-height: 100vh;
@@ -271,17 +271,18 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbzIaC1ifgYl7eeuomDsPgn-AaGEGu9_yOcJu5ILt3jv1DIWa05bWhUhv_fGdj6Zcg/exec";
         
         const prizes = [
-            { name: "خط أورف", probability: 17 },
-            { name: "خط أورف", probability: 20 },
-            { name: "خط أورف", probability: 0 },
-            { name: "100000", probability: 0 },
-            { name: "50000", probability: 0 },
-            { name: "25000", probability: 0 },
-            { name: "10000", probability: 1 },
-            { name: "5000", probability: 2 }
-        ];
+            { name: "خط أورف", probability: 17, image: "https://i.postimg.cc/DZGZhf6w/IMG-20260129-003520.jpg" },
+            { name: "خط أورف", probability: 20, image: "https://i.postimg.cc/DZGZhf6w/IMG-20260129-003520.jpg" },
+            { name: "خط أورف", probability: 20, image: "https://i.postimg.cc/DZGZhf6w/IMG-20260129-003520.jpg" },
+            { name: "حظ أوفر", probability: 20, image: "https://i.postimg.cc/DZGZhf6w/IMG-20260129-003520.jpg" },
+            { name: "خط أورف", probability: 20, image: "https://i.postimg.cc/DZGZhf6w/IMG-20260129-003520.jpg" },
+            { name: "30", probability: 1, image: "https://i.postimg.cc/DZGZhf6w/IMG-20260129-003520.jpg" },
+            { name: "50", probability: 1, image: "https://i.postimg.cc/DZGZhf6w/IMG-20260129-003520.jpg" },
+            { name: "20", probability: 1, image: "https://i.postimg.cc/DZGZhf6w/IMG-20260129-003520.jpg" }
+];
         
-        const colors = ["#C0C0C0", "#87CEEB"];
+        
+        const colors = ["#8B4513", "#ffffff"];
         
         // --- عناصر DOM --- //
         const elements = {
@@ -360,62 +361,93 @@
             const centerY = elements.wheel.height / 2;
             const radius = Math.min(centerX, centerY) - 10;
             const sliceAngle = (2 * Math.PI) / prizes.length;
-            
+    
             ctx.clearRect(0, 0, elements.wheel.width, elements.wheel.height);
+    
+            // تحميل الصور أولاً
+            const images = [];
+            let loadedCount = 0;
+    
+            const loadImages = () => {
+                prizes.forEach((prize, i) => {
+                    const img = new Image();
+                    img.src = prize.image;
+                    img.onload = () => {
+                        images[i] = img;
+                        loadedCount++;
+                        if (loadedCount === prizes.length) drawSectors();
+                    };
+                    img.onerror = () => {
+                        loadedCount++;
+                        if (loadedCount === prizes.length) drawSectors();
+                    };
+                });
+            };
+    
+            const drawSectors = () => {
+                for (let i = 0; i < prizes.length; i++) {
+                    const startAngle = i * sliceAngle;
+                    const endAngle = (i + 1) * sliceAngle;
             
-            for (let i = 0; i < prizes.length; i++) {
-                const startAngle = i * sliceAngle;
-                const endAngle = (i + 1) * sliceAngle;
-                
-                ctx.beginPath();
-                ctx.moveTo(centerX, centerY);
-                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-                ctx.closePath();
-                
-                ctx.fillStyle = colors[i % colors.length];
-                ctx.fill();
-                ctx.strokeStyle = '#444';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-                
-                ctx.save();
-                ctx.translate(centerX, centerY);
-                ctx.rotate(startAngle + sliceAngle / 2);
-                ctx.textAlign = 'right';
-                ctx.fillStyle = '#000';
-                ctx.font = 'bold 16px Arial';
-                ctx.fillText(prizes[i].name, radius - 20, 5);
-                ctx.restore();
-            }
+                    ctx.beginPath();
+                    ctx.moveTo(centerX, centerY);
+                    ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                    ctx.closePath();
+            
+                    ctx.fillStyle = colors[i % colors.length];
+                    ctx.fill();
+                    ctx.strokeStyle = '#444';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+            
+                    ctx.save();
+                    ctx.translate(centerX, centerY);
+                    ctx.rotate(startAngle + sliceAngle / 2);
+            
+                    if (images[i]) {
+                        const imgSize = 30;
+                        ctx.drawImage(images[i], radius - 50, -imgSize/2, imgSize, imgSize);
+                    } else {
+                        ctx.textAlign = 'right';
+                        ctx.fillStyle = '#000';
+                        ctx.font = 'bold 14px Arial';
+                        ctx.fillText(prizes[i].name, radius - 20, 5);
+                    }
+            
+                    ctx.restore();
+                }
+            };
+    
+            loadImages();
         };
-        
+
         const spin = async () => {
             if (isSpinning || !canSpin) return;
-            
+    
             isSpinning = true;
             updateUI(false, null, false);
-            
+    
             const selectedPrizeIndex = selectPrize();
             const prize = prizes[selectedPrizeIndex];
             const sliceAngle = (2 * Math.PI) / prizes.length;
             const targetAngle = 5 * 360 + (selectedPrizeIndex * sliceAngle * (180 / Math.PI));
-            
+    
             currentRotation = currentRotation % 360;
             const totalRotation = currentRotation + targetAngle;
-            
+    
             elements.wheel.style.transform = `rotate(${totalRotation}deg)`;
             elements.prizeDisplay.textContent = "جاري التدوير...";
-            
+    
             elements.wheel.addEventListener('transitionend', () => onSpinEnd(prize.name), { once: true });
         };
-        
+
         const onSpinEnd = async (finalPrize) => {
             isSpinning = false;
             elements.prizeDisplay.textContent = finalPrize;
-            
+    
             const data = await apiCall('save_spin', { user_id: userId, prize: finalPrize });
-            
-            if (finalPrize === "خط أورف") {
+    
+            if (finalPrize === "خط أورف" || finalPrize === "حظ أوفر") {
                 elements.resultMessage.textContent = "حظ أوفر في المرة القادمة!";
                 showResult(finalPrize);
             } else if (data && data.success) {
@@ -425,31 +457,31 @@
                 elements.resultMessage.textContent = "حدث خطأ في حفظ النتيجة";
                 showResult(finalPrize);
                 updateUI(true, null, false);
-            }
-        };
-        
+    }
+};
+
         const selectPrize = () => {
             const rand = Math.random() * 100;
             let cumulativeProbability = 0;
-            
+    
             for (let i = 0; i < prizes.length; i++) {
                 cumulativeProbability += prizes[i].probability;
                 if (rand <= cumulativeProbability) return i;
-            }
+    }
             return prizes.length - 1;
-        };
-        
+};
+
         const showResult = (prize) => {
             elements.winPrize.textContent = prize;
             elements.resultPopup.classList.add('show');
-        };
-        
+};
+
         const closeResult = () => {
             elements.resultPopup.classList.remove('show');
             setTimeout(() => {
                 updateUI(false, new Date().getTime(), false);
             }, 500);
-            
+    
             if (window.Telegram && window.Telegram.WebApp) {
                 window.Telegram.WebApp.close();
             }
