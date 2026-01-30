@@ -12,6 +12,7 @@
             --primary-color: #fdd835;
             --secondary-color: #212121;
             --disabled-color: #616161;
+            --error-color: #f44336;
             --shadow-color: rgba(0,0,0,0.5);
         }
 
@@ -61,6 +62,7 @@
             color: #e0e0e0;
             height: 24px;
             text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 10px;
         }
 
         .timer {
@@ -68,6 +70,17 @@
             color: var(--primary-color);
             height: 20px;
             font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .error-message {
+            color: var(--error-color);
+            font-size: 14px;
+            background: rgba(244, 67, 54, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            display: none;
         }
 
         .wheel-container {
@@ -241,8 +254,9 @@
 <body>
     <div class="container">
         <header>
-            <div class="status" id="status">SPINIX WHEEL</div>
+            <div class="status" id="status">جاري التحميل...</div>
             <div class="timer" id="timer"></div>
+            <div class="error-message" id="errorMessage"></div>
         </header>
         
         <div class="wheel-container">
@@ -251,7 +265,7 @@
             <div class="wheel-center">SPIN</div>
         </div>
         
-        <button class="spin-btn" id="spinBtn">SPIN</button>
+        <button class="spin-btn" id="spinBtn" disabled>جاري التحميل...</button>
     </div>
 
     <div class="result-popup" id="resultPopup">
@@ -286,7 +300,6 @@
         // --- عناصر DOM --- //
         const elements = {
             wheel: document.getElementById('wheel'),
-            prizeDisplay: document.getElementById('prizeDisplay'),
             spinBtn: document.getElementById('spinBtn'),
             timerEl: document.getElementById('timer'),
             statusEl: document.getElementById('status'),
@@ -296,8 +309,7 @@
             loadingOverlay: document.getElementById('loadingOverlay'),
             loadingText: document.getElementById('loadingText'),
             errorMessage: document.getElementById('errorMessage'),
-            resultMessage: document.getElementById('resultMessage'),
-            rateLimitMessage: document.getElementById('rateLimitMessage')
+            resultMessage: document.getElementById('resultMessage')
         };
         
         const ctx = elements.wheel.getContext('2d');
@@ -308,8 +320,7 @@
         let canSpin = false;
         let currentRotation = 0;
         let timerInterval = null;
-        let wheelImage = null;
-        let isRateLimited = false;
+        let connectionError = false;
         
         // --- وظائف الواجهة --- //
         const showLoading = (text) => {
@@ -321,36 +332,87 @@
             elements.loadingOverlay.classList.remove('show');
         };
         
-        const showError = (message) => {
+        const showError = (message, isFatal = false) => {
             console.error(message);
+            elements.errorMessage.textContent = message;
+            elements.errorMessage.style.display = 'block';
+            
+            if (isFatal) {
+                elements.spinBtn.disabled = true;
+                elements.spinBtn.textContent = "فشل الاتصال";
+                elements.statusEl.textContent = "تعذر الاتصال بالخادم";
+                elements.wheel.style.opacity = '0.5';
+            }
         };
         
-        const showRateLimitMessage = () => {
-            console.log("Rate limited");
+        const hideError = () => {
+            elements.errorMessage.style.display = 'none';
+            elements.wheel.style.opacity = '1';
         };
         
         // --- وظائف API --- //
         const apiCall = async (endpoint, data = {}) => {
             try {
-                const response = await fetch(`${API_URL}?endpoint=${endpoint}`, {
+                // محاولة الاتصال مع مهلة زمنية
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 ثواني مهلة
+                
+                const response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
+                    headers: { 
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        endpoint: endpoint,
+                        ...data
+                    }),
+                    signal: controller.signal
                 });
-                return await response.json();
+                
+                clearTimeout(timeoutId);
+                
+                if (!response.ok) {
+                    throw new Error(`خطأ في الخادم: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (!result.success && result.error) {
+                    throw new Error(result.error);
+                }
+                
+                return result;
+                
             } catch (error) {
-                console.error('API Error:', error);
-                return null;
+                if (error.name === 'AbortError') {
+                    throw new Error("انتهت مهلة الاتصال بالخادم");
+                }
+                throw error;
             }
         };
         
         const checkUserStatus = async () => {
-            const data = await apiCall('get_user_status', { user_id: userId });
-            if (data && data.success) {
-                const lastSpinTime = data.last_spin ? new Date(data.last_spin).getTime() : null;
-                updateUI(data.can_spin, lastSpinTime, data.rate_limited);
-            } else {
-                updateUI(false, null, false);
+            try {
+                hideError();
+                showLoading("جاري التحقق من الحالة...");
+                
+                const data = await apiCall('get_user_status', { user_id: userId });
+                
+                if (data && data.success) {
+                    const lastSpinTime = data.last_spin ? new Date(data.last_spin).getTime() : null;
+                    updateUI(data.can_spin, lastSpinTime, data.rate_limited);
+                    connectionError = false;
+                } else {
+                    showError("فشل في جلب البيانات من الخادم", true);
+                    connectionError = true;
+                }
+                
+            } catch (error) {
+                console.error('Error checking user status:', error);
+                showError(`فشل الاتصال بالخادم: ${error.message}`, true);
+                connectionError = true;
+            } finally {
+                hideLoading();
             }
         };
         
@@ -390,7 +452,7 @@
         };
         
         const spin = async () => {
-            if (isSpinning || !canSpin) return;
+            if (isSpinning || !canSpin || connectionError) return;
             
             isSpinning = true;
             updateUI(false, null, false);
@@ -404,27 +466,44 @@
             const totalRotation = currentRotation + targetAngle;
             
             elements.wheel.style.transform = `rotate(${totalRotation}deg)`;
-            elements.prizeDisplay.textContent = "جاري التدوير...";
             
             elements.wheel.addEventListener('transitionend', () => onSpinEnd(prize.name), { once: true });
         };
         
         const onSpinEnd = async (finalPrize) => {
             isSpinning = false;
-            elements.prizeDisplay.textContent = finalPrize;
             
-            const data = await apiCall('save_spin', { user_id: userId, prize: finalPrize });
-            
-            if (finalPrize === "خط أورف") {
-                elements.resultMessage.textContent = "حظ أوفر في المرة القادمة!";
+            try {
+                hideError();
+                showLoading("جاري حفظ النتيجة...");
+                
+                const data = await apiCall('save_spin', { 
+                    user_id: userId, 
+                    prize: finalPrize,
+                    timestamp: new Date().toISOString()
+                });
+                
+                if (finalPrize === "خط أورف") {
+                    elements.resultMessage.textContent = "حظ أوفر في المرة القادمة!";
+                    showResult(finalPrize);
+                } else if (data && data.success) {
+                    elements.resultMessage.textContent = "تم حفظ الجائزة بنجاح!";
+                    showResult(finalPrize);
+                } else {
+                    elements.resultMessage.textContent = "حدث خطأ في حفظ النتيجة";
+                    showResult(finalPrize);
+                }
+                
+                // تحديث الحالة بعد التدوير
+                await checkUserStatus();
+                
+            } catch (error) {
+                console.error('Error saving spin:', error);
+                elements.resultMessage.textContent = "فشل في حفظ النتيجة";
                 showResult(finalPrize);
-            } else if (data && data.success) {
-                elements.resultMessage.textContent = "تم حفظ الجائزة بنجاح!";
-                showResult(finalPrize);
-            } else {
-                elements.resultMessage.textContent = "حدث خطأ في حفظ النتيجة";
-                showResult(finalPrize);
-                updateUI(true, null, false);
+                showError("فشل الاتصال بالخادم أثناء حفظ النتيجة", true);
+            } finally {
+                hideLoading();
             }
         };
         
@@ -446,9 +525,6 @@
         
         const closeResult = () => {
             elements.resultPopup.classList.remove('show');
-            setTimeout(() => {
-                updateUI(false, new Date().getTime(), false);
-            }, 500);
             
             if (window.Telegram && window.Telegram.WebApp) {
                 window.Telegram.WebApp.close();
@@ -458,6 +534,12 @@
         // --- وظائف تحديث الواجهة --- //
         const updateUI = (canSpinNow, lastTime, isRateLimitedNow = false) => {
             canSpin = canSpinNow;
+            
+            if (connectionError) {
+                elements.spinBtn.disabled = true;
+                elements.spinBtn.textContent = "فشل الاتصال";
+                return;
+            }
             
             if (isRateLimitedNow) {
                 elements.spinBtn.disabled = true;
@@ -474,11 +556,16 @@
                 elements.statusEl.textContent = "SPINIX WHEEL";
                 elements.timerEl.textContent = "";
                 if (timerInterval) clearInterval(timerInterval);
+                hideError();
             } else {
                 elements.spinBtn.disabled = true;
                 elements.spinBtn.textContent = "عد الحقاً";
                 elements.statusEl.textContent = "لقد قمت بالتدوير بالفعل اليوم";
-                if (lastTime) startTimer(lastTime);
+                if (lastTime) {
+                    startTimer(lastTime);
+                } else {
+                    elements.timerEl.textContent = "24:00:00";
+                }
             }
         };
         
@@ -492,7 +579,7 @@
                 
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
-                    updateUI(true, null, false);
+                    checkUserStatus(); // إعادة التحقق من الخادم
                     return;
                 }
                 
@@ -510,47 +597,54 @@
         // --- التهيئة --- //
         const init = async () => {
             showLoading("جاري تهيئة التطبيق...");
-            
-            // رسم العجلة باستخدام Canvas
             drawWheel();
             
             try {
                 // جلب المعلمات من رابط URL
                 const urlParams = new URLSearchParams(window.location.search);
-                const userStateParam = urlParams.get('eligible'); // 'true' أو 'false'
+                const userStateParam = urlParams.get('eligible');
                 
                 // التحقق من حالة المؤهلية
                 const isEligible = userStateParam === 'true';
                 
                 if (!isEligible) {
-                    // إذا كان المستخدم غير مؤهل
                     elements.spinBtn.disabled = true;
                     elements.spinBtn.textContent = "غير مؤهل";
                     elements.statusEl.textContent = "غير مؤهل للمشاركة";
-                    elements.timerEl.textContent = "";
                     hideLoading();
-                    return; // إيقاف التهيئة هنا
+                    return;
                 }
 
+                // الحصول على معرف المستخدم
                 if (window.Telegram && window.Telegram.WebApp) {
                     Telegram.WebApp.ready();
                     const tgUser = Telegram.WebApp.initDataUnsafe.user;
-                    if (tgUser && tgUser.id) userId = tgUser.id;
+                    if (tgUser && tgUser.id) {
+                        userId = tgUser.id.toString();
+                        console.log("Telegram User ID:", userId);
+                    }
                 }
 
+                // إذا لم يكن هناك معرف من Telegram
                 if (!userId) {
-                    userId = urlParams.get('user_id') || "test_user_12345";
+                    userId = urlParams.get('user_id');
+                    if (!userId) {
+                        showError("معرف المستخدم غير متوفر", true);
+                        hideLoading();
+                        return;
+                    }
                 }
 
+                // إضافة مستمعي الأحداث
                 elements.spinBtn.addEventListener('click', spin);
                 elements.closeBtn.addEventListener('click', closeResult);
 
+                // التحقق من حالة المستخدم
                 await checkUserStatus();
 
             } catch (error) {
-                console.error('Initialization failed.', error);
-                showError("فشل في تهيئة التطبيق");
-                showRateLimitMessage();
+                console.error('Initialization failed:', error);
+                showError("فشل في تهيئة التطبيق: " + error.message, true);
             } finally {
                 hideLoading();
             }
