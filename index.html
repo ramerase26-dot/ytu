@@ -282,6 +282,7 @@
     </div>
 
     <script>
+        // استخدم رابط Google Apps Script الخاص بك هنا
         const API_URL = "https://script.google.com/macros/s/AKfycbw36yJkMlooBEVDEbHNUXuxbbulVuIR6_AtHN2Ix0tWmKCOyh6V0vjzEostbxevaPiO/exec";
         
         const prizes = [
@@ -350,44 +351,37 @@
             elements.wheel.style.opacity = '1';
         };
         
-        // --- وظائف API --- //
+        // --- وظائف API معدلة للتناسب مع بنية الخلفية الجديدة --- //
         const apiCall = async (endpoint, data = {}) => {
             try {
-                // محاولة الاتصال مع مهلة زمنية
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 ثواني مهلة
+                // إضافة endpoint كـ action في البيانات
+                const payload = {
+                    action: endpoint,
+                    ...data
+                };
+                
+                console.log("Sending API request:", { endpoint, payload });
                 
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        endpoint: endpoint,
-                        ...data
-                    }),
-                    signal: controller.signal
+                    body: JSON.stringify(payload)
                 });
-                
-                clearTimeout(timeoutId);
                 
                 if (!response.ok) {
                     throw new Error(`خطأ في الخادم: ${response.status}`);
                 }
                 
                 const result = await response.json();
-                
-                if (!result.success && result.error) {
-                    throw new Error(result.error);
-                }
+                console.log("API response:", result);
                 
                 return result;
                 
             } catch (error) {
-                if (error.name === 'AbortError') {
-                    throw new Error("انتهت مهلة الاتصال بالخادم");
-                }
-                throw error;
+                console.error('API Error:', error);
+                throw new Error(`فشل الاتصال بالخادم: ${error.message}`);
             }
         };
         
@@ -396,12 +390,19 @@
                 hideError();
                 showLoading("جاري التحقق من الحالة...");
                 
-                const data = await apiCall('get_user_status', { user_id: userId });
+                const data = await apiCall('check_user', { user_id: userId });
                 
-                if (data && data.success) {
-                    const lastSpinTime = data.last_spin ? new Date(data.last_spin).getTime() : null;
-                    updateUI(data.can_spin, lastSpinTime, data.rate_limited);
+                if (data) {
+                    // التكيف مع بنية الاستجابة الجديدة
+                    const canSpinNow = data.canSpin || false;
+                    const lastSpinTime = data.lastTime ? new Date(data.lastTime).getTime() : null;
+                    
+                    updateUI(canSpinNow, lastSpinTime);
                     connectionError = false;
+                    
+                    if (data.message) {
+                        elements.statusEl.textContent = data.message;
+                    }
                 } else {
                     showError("فشل في جلب البيانات من الخادم", true);
                     connectionError = true;
@@ -409,7 +410,7 @@
                 
             } catch (error) {
                 console.error('Error checking user status:', error);
-                showError(`فشل الاتصال بالخادم: ${error.message}`, true);
+                showError(error.message, true);
                 connectionError = true;
             } finally {
                 hideLoading();
@@ -455,7 +456,7 @@
             if (isSpinning || !canSpin || connectionError) return;
             
             isSpinning = true;
-            updateUI(false, null, false);
+            updateUI(false, null);
             
             const selectedPrizeIndex = selectPrize();
             const prize = prizes[selectedPrizeIndex];
@@ -477,20 +478,20 @@
                 hideError();
                 showLoading("جاري حفظ النتيجة...");
                 
+                // استخدام "save_spin" بدلاً من "save_spin"
                 const data = await apiCall('save_spin', { 
                     user_id: userId, 
-                    prize: finalPrize,
-                    timestamp: new Date().toISOString()
+                    prize: finalPrize
                 });
                 
                 if (finalPrize === "خط أورف") {
                     elements.resultMessage.textContent = "حظ أوفر في المرة القادمة!";
                     showResult(finalPrize);
                 } else if (data && data.success) {
-                    elements.resultMessage.textContent = "تم حفظ الجائزة بنجاح!";
+                    elements.resultMessage.textContent = "تم حفظ الجائزة بنجاح! سيصلك رسالة التفعيل على التلغرام";
                     showResult(finalPrize);
                 } else {
-                    elements.resultMessage.textContent = "حدث خطأ في حفظ النتيجة";
+                    elements.resultMessage.textContent = data?.message || "حدث خطأ في حفظ النتيجة";
                     showResult(finalPrize);
                 }
                 
@@ -501,7 +502,7 @@
                 console.error('Error saving spin:', error);
                 elements.resultMessage.textContent = "فشل في حفظ النتيجة";
                 showResult(finalPrize);
-                showError("فشل الاتصال بالخادم أثناء حفظ النتيجة", true);
+                showError(error.message, true);
             } finally {
                 hideLoading();
             }
@@ -532,21 +533,12 @@
         };
         
         // --- وظائف تحديث الواجهة --- //
-        const updateUI = (canSpinNow, lastTime, isRateLimitedNow = false) => {
+        const updateUI = (canSpinNow, lastTime) => {
             canSpin = canSpinNow;
             
             if (connectionError) {
                 elements.spinBtn.disabled = true;
                 elements.spinBtn.textContent = "فشل الاتصال";
-                return;
-            }
-            
-            if (isRateLimitedNow) {
-                elements.spinBtn.disabled = true;
-                elements.spinBtn.textContent = "معلق مؤقتاً";
-                elements.statusEl.textContent = "تم تجاوز الحد المسموح";
-                elements.timerEl.textContent = "";
-                if (timerInterval) clearInterval(timerInterval);
                 return;
             }
             
