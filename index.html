@@ -236,6 +236,14 @@
             opacity: 1;
             visibility: visible;
         }
+
+        /* إضافة لعرض الصورة في النتيجة */
+        .prize-image {
+            width: 100px;
+            height: 100px;
+            margin: 20px auto;
+            object-fit: contain;
+        }
     </style>
 </head>
 <body>
@@ -257,6 +265,7 @@
     <div class="result-popup" id="resultPopup">
         <div class="result-content">
             <h2>مبروك!</h2>
+            <img id="prizeImage" class="prize-image" src="" alt="الجائزة">
             <div class="prize-text" id="winPrize"></div>
             <div id="resultMessage"></div>
             <button class="close-btn" id="closeBtn">إغلاق</button>
@@ -268,26 +277,25 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbzIaC1ifgYl7eeuomDsPgn-AaGEGu9_yOcJu5ILt3jv1DIWa05bWhUhv_fGdj6Zcg/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbzxt3bMqeoBXFVDhz88rzudS2GpNUDxFNGmTdF11HAlSMsB0WLXr8rohjTDXMYyXRciiw/exec";
         
+        // تحديث المصفوفة لتشمل روابط الصور
         const prizes = [
             { name: "خط أورف", probability: 17, image: "https://i.postimg.cc/DZGZhf6w/IMG-20260129-003520.jpg" },
             { name: "خط أورف", probability: 20, image: "https://i.postimg.cc/DZGZhf6w/IMG-20260129-003520.jpg" },
             { name: "خط أورف", probability: 20, image: "https://i.postimg.cc/DZGZhf6w/IMG-20260129-003520.jpg" },
-            { name: "حظ أوفر", probability: 20, image: "https://i.postimg.cc/DZGZhf6w/IMG-20260129-003520.jpg" },
+            { name: "خط أورف", probability: 20, image: "https://i.postimg.cc/DZGZhf6w/IMG-20260129-003520.jpg" },
             { name: "خط أورف", probability: 20, image: "https://i.postimg.cc/DZGZhf6w/IMG-20260129-003520.jpg" },
             { name: "30", probability: 1, image: "https://i.postimg.cc/DZGZhf6w/IMG-20260129-003520.jpg" },
             { name: "50", probability: 1, image: "https://i.postimg.cc/DZGZhf6w/IMG-20260129-003520.jpg" },
             { name: "20", probability: 1, image: "https://i.postimg.cc/DZGZhf6w/IMG-20260129-003520.jpg" }
-];
+        ];
         
-        
-        const colors = ["#00BFFF", "#A9A9A9"];
+        const colors = ["#8B4513", "#ffffff"];
         
         // --- عناصر DOM --- //
         const elements = {
             wheel: document.getElementById('wheel'),
-            prizeDisplay: document.getElementById('prizeDisplay'),
             spinBtn: document.getElementById('spinBtn'),
             timerEl: document.getElementById('timer'),
             statusEl: document.getElementById('status'),
@@ -296,9 +304,8 @@
             closeBtn: document.getElementById('closeBtn'),
             loadingOverlay: document.getElementById('loadingOverlay'),
             loadingText: document.getElementById('loadingText'),
-            errorMessage: document.getElementById('errorMessage'),
             resultMessage: document.getElementById('resultMessage'),
-            rateLimitMessage: document.getElementById('rateLimitMessage')
+            prizeImage: document.getElementById('prizeImage')
         };
         
         const ctx = elements.wheel.getContext('2d');
@@ -311,6 +318,10 @@
         let timerInterval = null;
         let wheelImage = null;
         let isRateLimited = false;
+        
+        // متغيرات الصور
+        let prizeImages = [];
+        let imagesLoaded = 0;
         
         // --- وظائف الواجهة --- //
         const showLoading = (text) => {
@@ -356,98 +367,114 @@
         };
         
         // --- وظائف العجلة --- //
+        const loadImages = () => {
+            return new Promise((resolve) => {
+                prizes.forEach((prize, index) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        imagesLoaded++;
+                        if (imagesLoaded === prizes.length) {
+                            resolve();
+                        }
+                    };
+                    img.onerror = () => {
+                        console.warn(`Failed to load image for prize: ${prize.name}`);
+                        imagesLoaded++;
+                        if (imagesLoaded === prizes.length) {
+                            resolve();
+                        }
+                    };
+                    img.src = prize.image;
+                    prizeImages[index] = img;
+                });
+            });
+        };
+        
         const drawWheel = () => {
             const centerX = elements.wheel.width / 2;
             const centerY = elements.wheel.height / 2;
             const radius = Math.min(centerX, centerY) - 10;
             const sliceAngle = (2 * Math.PI) / prizes.length;
-    
+            
             ctx.clearRect(0, 0, elements.wheel.width, elements.wheel.height);
-    
-            // تحميل الصور أولاً
-            const images = [];
-            let loadedCount = 0;
-    
-            const loadImages = () => {
-                prizes.forEach((prize, i) => {
-                    const img = new Image();
-                    img.src = prize.image;
-                    img.onload = () => {
-                        images[i] = img;
-                        loadedCount++;
-                        if (loadedCount === prizes.length) drawSectors();
-                    };
-                    img.onerror = () => {
-                        loadedCount++;
-                        if (loadedCount === prizes.length) drawSectors();
-                    };
-                });
-            };
-    
-            const drawSectors = () => {
-                for (let i = 0; i < prizes.length; i++) {
-                    const startAngle = i * sliceAngle;
-                    const endAngle = (i + 1) * sliceAngle;
             
-                    ctx.beginPath();
-                    ctx.moveTo(centerX, centerY);
-                    ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-                    ctx.closePath();
-            
-                    ctx.fillStyle = colors[i % colors.length];
-                    ctx.fill();
-                    ctx.strokeStyle = '#444';
-                    ctx.lineWidth = 2;
-                    ctx.stroke();
-            
-                    ctx.save();
-                    ctx.translate(centerX, centerY);
-                    ctx.rotate(startAngle + sliceAngle / 2);
-            
-                    if (images[i]) {
-                        const imgSize = 30;
-                        ctx.drawImage(images[i], radius - 50, -imgSize/2, imgSize, imgSize);
-                    } else {
-                        ctx.textAlign = 'right';
-                        ctx.fillStyle = '#000';
-                        ctx.font = 'bold 14px Arial';
-                        ctx.fillText(prizes[i].name, radius - 20, 5);
+            for (let i = 0; i < prizes.length; i++) {
+                const startAngle = i * sliceAngle;
+                const endAngle = (i + 1) * sliceAngle;
+                
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.closePath();
+                
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.fill();
+                ctx.strokeStyle = '#444';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // حفظ حالة الـ Canvas للرسم
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(startAngle + sliceAngle / 2);
+                
+                // رسم الصورة بدلاً من النص
+                const img = prizeImages[i];
+                if (img && img.complete) {
+                    const imgSize = 40; // حجم الصورة
+                    const imgX = radius - 55; // موضع الصورة
+                    const imgY = -imgSize / 2;
+                    
+                    // رسم خلفية بيضاء للصورة إذا كانت الخلفية بنية
+                    if (colors[i % colors.length] === "#8B4513") {
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                        ctx.beginPath();
+                        ctx.arc(imgX + imgSize/2, 0, imgSize/2 + 5, 0, Math.PI * 2);
+                        ctx.fill();
                     }
-            
-                    ctx.restore();
+                    
+                    ctx.drawImage(img, imgX, imgY, imgSize, imgSize);
+                } else {
+                    // إذا فشل تحميل الصورة، استخدم النص كبديل
+                    ctx.textAlign = 'right';
+                    ctx.fillStyle = colors[i % colors.length] === "#8B4513" ? '#FFF' : '#000';
+                    ctx.font = 'bold 16px Arial';
+                    ctx.fillText(prizes[i].name, radius - 20, 5);
                 }
-            };
-    
-            loadImages();
+                
+                ctx.restore();
+            }
         };
-
+        
         const spin = async () => {
             if (isSpinning || !canSpin) return;
-    
+            
             isSpinning = true;
             updateUI(false, null, false);
-    
+            
             const selectedPrizeIndex = selectPrize();
             const prize = prizes[selectedPrizeIndex];
             const sliceAngle = (2 * Math.PI) / prizes.length;
             const targetAngle = 5 * 360 + (selectedPrizeIndex * sliceAngle * (180 / Math.PI));
-    
+            
             currentRotation = currentRotation % 360;
             const totalRotation = currentRotation + targetAngle;
-    
+            
             elements.wheel.style.transform = `rotate(${totalRotation}deg)`;
-            elements.prizeDisplay.textContent = "جاري التدوير...";
-    
-            elements.wheel.addEventListener('transitionend', () => onSpinEnd(prize.name), { once: true });
+            
+            elements.wheel.addEventListener('transitionend', () => onSpinEnd(prize), { once: true });
         };
-
+        
         const onSpinEnd = async (finalPrize) => {
             isSpinning = false;
-            elements.prizeDisplay.textContent = finalPrize;
-    
-            const data = await apiCall('save_spin', { user_id: userId, prize: finalPrize });
-    
-            if (finalPrize === "خط أورف" || finalPrize === "حظ أوفر") {
+            
+            // عرض الصورة في النافذة المنبثقة
+            elements.prizeImage.src = finalPrize.image;
+            elements.winPrize.textContent = finalPrize.name;
+            
+            const data = await apiCall('save_spin', { user_id: userId, prize: finalPrize.name });
+            
+            if (finalPrize.name === "خط أورف") {
                 elements.resultMessage.textContent = "حظ أوفر في المرة القادمة!";
                 showResult(finalPrize);
             } else if (data && data.success) {
@@ -457,31 +484,32 @@
                 elements.resultMessage.textContent = "حدث خطأ في حفظ النتيجة";
                 showResult(finalPrize);
                 updateUI(true, null, false);
-    }
-};
-
+            }
+        };
+        
         const selectPrize = () => {
             const rand = Math.random() * 100;
             let cumulativeProbability = 0;
-    
+            
             for (let i = 0; i < prizes.length; i++) {
                 cumulativeProbability += prizes[i].probability;
                 if (rand <= cumulativeProbability) return i;
-    }
+            }
             return prizes.length - 1;
-};
-
+        };
+        
         const showResult = (prize) => {
-            elements.winPrize.textContent = prize;
+            elements.winPrize.textContent = prize.name;
+            elements.prizeImage.src = prize.image;
             elements.resultPopup.classList.add('show');
-};
-
+        };
+        
         const closeResult = () => {
             elements.resultPopup.classList.remove('show');
             setTimeout(() => {
                 updateUI(false, new Date().getTime(), false);
             }, 500);
-    
+            
             if (window.Telegram && window.Telegram.WebApp) {
                 window.Telegram.WebApp.close();
             }
@@ -543,10 +571,13 @@
         const init = async () => {
             showLoading("جاري تهيئة التطبيق...");
             
-            // رسم العجلة باستخدام Canvas
-            drawWheel();
-            
             try {
+                // تحميل الصور أولاً
+                await loadImages();
+                
+                // رسم العجلة باستخدام Canvas
+                drawWheel();
+                
                 // جلب المعلمات من رابط URL
                 const urlParams = new URLSearchParams(window.location.search);
                 const userStateParam = urlParams.get('eligible'); // 'true' أو 'false'
@@ -555,13 +586,12 @@
                 const isEligible = userStateParam === 'true';
                 
                 if (!isEligible) {
-                    // إذا كان المستخدم غير مؤهل
                     elements.spinBtn.disabled = true;
                     elements.spinBtn.textContent = "غير مؤهل";
                     elements.statusEl.textContent = "غير مؤهل للمشاركة";
                     elements.timerEl.textContent = "";
                     hideLoading();
-                    return; // إيقاف التهيئة هنا
+                    return;
                 }
 
                 if (window.Telegram && window.Telegram.WebApp) {
