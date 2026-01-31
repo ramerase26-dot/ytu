@@ -4,137 +4,196 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>عجلة الحظ</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #1a237e; color: white; text-align: center; padding: 20px; }
-        .wheel { width: 300px; height: 300px; margin: 20px auto; position: relative; }
-        .spin-btn { background: #FF5722; color: white; border: none; padding: 15px 30px; 
-                   border-radius: 25px; font-size: 18px; cursor: pointer; margin: 20px; }
-        .spin-btn:disabled { background: #666; cursor: not-allowed; }
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+        }
+        .container {
+            position: relative;
+            width: 350px;
+            height: 350px;
+        }
+        #wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 10px solid #fff;
+            position: relative;
+            overflow: hidden;
+            transition: transform 5s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .slice {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            background-color: var(--c);
+            transform-origin: 100% 100%;
+            transform: rotate(var(--r));
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        #spinBtn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #e74c3c;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            border: 5px solid white;
+            cursor: pointer;
+            z-index: 10;
+        }
+        #spinBtn:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        .pointer {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-bottom: 30px solid #e74c3c;
+            z-index: 20;
+        }
     </style>
 </head>
 <body>
-    <h1>🎡 عجلة الحظ</h1>
-    <p id="status">جاري التحقق...</p>
+
+<div class="container">
+    <div class="pointer"></div>
+    <div id="wheel"></div>
+    <button id="spinBtn" onclick="spinWheel()"> крутить </button>
+</div>
+
+<script>
+    const wheel = document.getElementById('wheel');
+    const spinBtn = document.getElementById('spinBtn');
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('userId');
     
-    <div class="wheel" id="wheel">
-        <!-- العجلة -->
-    </div>
-    
-    <button class="spin-btn" id="spinBtn" disabled>انتظر...</button>
-    <div id="result" style="display:none; margin:20px; padding:15px; background:rgba(255,255,255,0.1); border-radius:10px;"></div>
-    
-    <script>
-        // ⚙️ الإعدادات - غير هذه الروابط
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbyoMQb71upUXKG39ofqlghXY9xYHxFLPnVPGz4mdqyjIBamAsCb7-aIhLWU9jCEFZAd/exec";
-        const TELEGRAM_BOT_NAME = "YourBotUsername";
-        
-        let userId = new URLSearchParams(window.location.search).get('user_id');
-        let canSpin = false;
-        
-        function init() {
-            if (!userId) {
-                document.getElementById("status").innerHTML = "❌ رابط غير صحيح";
+    // **مهم:** استبدل هذا الرابط برابط النشر الخاص بك في Google Apps Script
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyZsY0XV49KYQhvsW9vAKMlB96SY07Q6k6i1YUuX4XjK-UkG6F5Iwjxsf1JYBywixlM/exec";
+
+    const prizes = [
+        { text: "5,000", color: "#3498db", value: 5000 },
+        { text: "10,000", color: "#f1c40f", value: 10000 },
+        { text: "20,000", color: "#e67e22", value: 20000 },
+        { text: "50,000", color: "#9b59b6", value: 50000 },
+        { text: "حظ أوفر", color: "#7f8c8d", value: 0 },
+        { text: "حظ أوفر", color: "#bdc3c7", value: 0 },
+        { text: "حظ أوفر", color: "#7f8c8d", value: 0 },
+        { text: "حظ أوفر", color: "#bdc3c7", value: 0 }
+    ];
+
+    const sliceCount = prizes.length;
+    const sliceAngle = 360 / sliceCount;
+
+    prizes.forEach((prize, i) => {
+        const slice = document.createElement('div');
+        slice.className = 'slice';
+        slice.style.setProperty('--c', prize.color);
+        slice.style.setProperty('--r', `${i * sliceAngle}deg`);
+        slice.innerHTML = `<span>${prize.text}</span>`;
+        wheel.appendChild(slice);
+    });
+
+    async function checkEligibility() {
+        if (!userId) {
+            showResult("خطأ", "معرف المستخدم غير موجود.", "error");
+            spinBtn.disabled = true;
+            return;
+        }
+
+        spinBtn.disabled = true;
+        spinBtn.textContent = '...جارِ التحقق';
+
+        try {
+            const response = await fetch(`${SCRIPT_URL}?userId=${userId}&action=check`);
+            const result = await response.json();
+
+            if (result.eligible) {
+                spinBtn.disabled = false;
+                spinBtn.textContent = 'крутить';
+                Swal.fire('أهلاً بك!', 'أنت مؤهل لتدوير العجلة. بالتوفيق!', 'success');
+            } else {
+                showResult("غير مؤهل", result.message, "warning");
+            }
+        } catch (error) {
+            showResult("خطأ في الشبكة", "لا يمكن الاتصال بالخادم للتحقق من الأهلية.", "error");
+        }
+    }
+
+    async function spinWheel() {
+        spinBtn.disabled = true;
+        spinBtn.textContent = '...تدور';
+
+        try {
+            const response = await fetch(`${SCRIPT_URL}?userId=${userId}&action=spin`);
+            const result = await response.json();
+
+            if (result.error) {
+                showResult("خطأ", result.error, "error");
+                spinBtn.disabled = false;
+                spinBtn.textContent = 'крутить';
                 return;
             }
             
-            document.getElementById("status").innerHTML = `👤 المستخدم: ${userId}`;
-            checkEligibility();
-            createWheel();
-        }
-        
-        function createWheel() {
-            const wheel = document.getElementById("wheel");
-            const prizes = [5000, 10000, 25000, 50000, 100000];
-            const colors = ['#FF5252', '#FF4081', '#E040FB', '#7C4DFF', '#448AFF'];
+            const { prize, rotation } = result;
             
-            prizes.forEach((prize, i) => {
-                const segment = document.createElement("div");
-                segment.style.cssText = `
-                    position: absolute;
-                    width: 50%;
-                    height: 50%;
-                    left: 0;
-                    top: 0;
-                    transform-origin: bottom right;
-                    transform: rotate(${i * 72}deg) skewY(${18}deg);
-                    background: ${colors[i]};
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                `;
-                
-                const content = document.createElement("div");
-                content.innerHTML = prize.toLocaleString();
-                content.style.transform = `skewY(${-18}deg) rotate(${36}deg)`;
-                
-                segment.appendChild(content);
-                wheel.appendChild(segment);
-            });
+            wheel.style.transform = `rotate(${rotation}deg)`;
+
+            setTimeout(() => {
+                const prizeText = prize > 0 ? `مبروك! لقد ربحت ${prize.toLocaleString()}` : "حظ أوفر في المرة القادمة!";
+                const icon = prize > 0 ? 'success' : 'info';
+                showResult("النتيجة", prizeText, icon, true);
+            }, 5500);
+
+        } catch (error) {
+            showResult("خطأ في التدوير", "حدث خطأ أثناء محاولة تدوير العجلة.", "error");
+            spinBtn.disabled = false;
+            spinBtn.textContent = 'крутить';
         }
-        
-        async function checkEligibility() {
-            try {
-                const response = await fetch(GAS_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({action: 'check', user_id: userId})
-                });
-                const data = await response.json();
-                
-                if (data.eligible) {
-                    canSpin = true;
-                    document.getElementById("spinBtn").disabled = false;
-                    document.getElementById("spinBtn").textContent = "🎡 ابدأ التدوير";
-                    document.getElementById("status").innerHTML += `<br>✅ مؤهل للعب`;
-                } else {
-                    document.getElementById("status").innerHTML += `<br>❌ غير مؤهل: ${data.reason}`;
-                }
-            } catch (error) {
-                document.getElementById("status").innerHTML += `<br>❌ خطأ في الاتصال`;
+    }
+
+    function showResult(title, text, icon, closeModal = false) {
+        Swal.fire({
+            title: title,
+            text: text,
+            icon: icon,
+            confirmButtonText: 'حسناً'
+        }).then(() => {
+            if (closeModal) {
+                // يمكنك إضافة إجراء هنا مثل إغلاق النافذة
+                // window.close();
             }
-        }
-        
-        async function spinWheel() {
-            if (!canSpin) return;
-            
-            document.getElementById("spinBtn").disabled = true;
-            document.getElementById("spinBtn").textContent = "جاري التدوير...";
-            
-            const prizes = [5000, 10000, 25000, 50000, 100000];
-            const prize = prizes[Math.floor(Math.random() * prizes.length)];
-            
-            document.getElementById("wheel").style.transform = `rotate(${1440 + Math.random() * 360}deg)`;
-            
-            setTimeout(async () => {
-                try {
-                    const response = await fetch(GAS_URL, {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            action: 'record',
-                            user_id: userId,
-                            prize: prize
-                        })
-                    });
-                    
-                    const result = document.getElementById("result");
-                    result.style.display = "block";
-                    result.innerHTML = `
-                        <h3>🎉 مبروك!</h3>
-                        <p>فزت بجائزة: <strong>${prize.toLocaleString()} نقطة</strong></p>
-                        <p>سيتم إضافتها لمحفظتك في البوت</p>
-                    `;
-                    
-                    canSpin = false;
-                    document.getElementById("spinBtn").textContent = "تم التدوير";
-                    
-                } catch (error) {
-                    alert("خطأ في الاتصال");
-                }
-            }, 3000);
-        }
-        
-        document.getElementById("spinBtn").onclick = spinWheel;
-        window.onload = init;
-    </script>
+        });
+    }
+
+    // بدء التحقق من الأهلية عند تحميل الصفحة
+    window.onload = checkEligibility;
+
+</script>
 </body>
 </html>
