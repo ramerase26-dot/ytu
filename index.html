@@ -2,105 +2,698 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>🎡 عجلة الحظ</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎡 عجلة الحظ - تجريبي</title>
     <style>
-        /* نفس الأنماط السابقة */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: white;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            max-width: 900px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            color: #FFD700;
+            margin-bottom: 10px;
+            text-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+        }
+        
+        .header p {
+            color: #aaa;
+            font-size: 1.1rem;
+        }
+        
+        .warning {
+            background: rgba(255, 68, 68, 0.2);
+            border: 2px solid #ff4444;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .warning h3 {
+            color: #ff4444;
+            margin-bottom: 10px;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .user-info {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .info-label {
+            color: #4ecdc4;
+            font-weight: bold;
+        }
+        
+        .info-value {
+            color: #FFD700;
+            font-weight: bold;
+        }
+        
+        .bot-controls {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+        }
+        
+        .control-item {
+            margin-bottom: 20px;
+        }
+        
+        .control-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #4ecdc4;
+            font-weight: bold;
+        }
+        
+        .token-display {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            padding: 15px;
+            font-family: monospace;
+            word-break: break-all;
+            color: #ffa500;
+            border: 1px solid rgba(255, 165, 0, 0.3);
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #FF416C, #FF4B2B);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(255, 65, 108, 0.4);
+        }
+        
+        .btn-success {
+            background: linear-gradient(45deg, #2ecc71, #27ae60);
+        }
+        
+        .btn-test {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+        }
+        
+        .wheel-section {
+            margin-top: 40px;
+            text-align: center;
+        }
+        
+        .wheel-container {
+            position: relative;
+            width: 350px;
+            height: 350px;
+            margin: 40px auto;
+        }
+        
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: relative;
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+            background: conic-gradient(
+                #FF6B6B 0deg 45deg,
+                #4ECDC4 45deg 90deg,
+                #45B7D1 90deg 135deg,
+                #96CEB4 135deg 180deg,
+                #FFEAA7 180deg 225deg,
+                #DDA0DD 225deg 270deg,
+                #FFA07A 270deg 315deg,
+                #20B2AA 315deg 360deg
+            );
+        }
+        
+        .wheel-pointer {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+            background: #FFD700;
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            z-index: 10;
+        }
+        
+        .prizes {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .prize-item {
+            background: rgba(255, 215, 0, 0.1);
+            padding: 15px 25px;
+            border-radius: 10px;
+            border: 2px solid #FFD700;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .response-log {
+            margin-top: 40px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .log-title {
+            color: #4ecdc4;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        
+        .log-item {
+            padding: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        
+        .success { color: #2ecc71; }
+        .error { color: #e74c3c; }
+        .info { color: #3498db; }
+        
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .wheel-container {
+                width: 300px;
+                height: 300px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- نفس المحتوى السابق -->
+        <!-- تحذير أمان -->
+        <div class="warning">
+            <h3>⚠️ تحذير: هذا الكود للتجربة فقط!</h3>
+            <p>التوكن مكشوف هنا - لا تستخدمه في مشروع حقيقي!</p>
+        </div>
+        
+        <!-- العنوان -->
+        <div class="header">
+            <h1>🎡 عجلة الحظ - النسخة التجريبية</h1>
+            <p>البوت: LuckyWheelBot | النمط: مباشر مع Telegram API</p>
+        </div>
+        
+        <!-- لوحة التحكم -->
+        <div class="dashboard">
+            <!-- معلومات المستخدم -->
+            <div class="user-info">
+                <h3 style="color: #FFD700; margin-bottom: 20px;">👤 بيانات المستخدم</h3>
+                <div class="info-item">
+                    <span class="info-label">معرف التلغرام:</span>
+                    <span class="info-value" id="userId">123456789</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">اسم المستخدم:</span>
+                    <span class="info-value" id="username">test_user</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">آخر شحن:</span>
+                    <span class="info-value" id="lastCharge">50$</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">الرصيد الحالي:</span>
+                    <span class="info-value" id="balance">150$</span>
+                </div>
+            </div>
+            
+            <!-- تحكم البوت -->
+            <div class="bot-controls">
+                <h3 style="color: #FFD700; margin-bottom: 20px;">🤖 إعدادات البوت</h3>
+                
+                <div class="control-item">
+                    <label class="control-label">توكن البوت (مكشوف):</label>
+                    <div class="token-display" id="tokenDisplay">
+                        7102912345:AAHabcdefghijklmnopqrstuvwxyzABCDEF
+                    </div>
+                    <button class="btn btn-test" onclick="testBotConnection()">
+                        🔗 اختبار اتصال البوت
+                    </button>
+                </div>
+                
+                <div class="control-item">
+                    <label class="control-label">معرف المستخدم الهدف:</label>
+                    <input type="text" id="targetUserId" class="token-display" 
+                           value="123456789" style="width: 100%; padding: 10px;">
+                </div>
+                
+                <div class="control-item">
+                    <label class="control-label">الجائزة المطلوبة:</label>
+                    <input type="number" id="prizeAmount" class="token-display" 
+                           value="100" style="width: 100%; padding: 10px;" min="1" max="1000">
+                </div>
+            </div>
+        </div>
+        
+        <!-- عجلة الحظ -->
+        <div class="wheel-section">
+            <h2 style="color: #FFD700; margin-bottom: 20px;">🎡 تدوير العجلة</h2>
+            
+            <div class="wheel-container">
+                <div class="wheel-pointer"></div>
+                <div class="wheel" id="wheel"></div>
+            </div>
+            
+            <button class="btn" onclick="spinWheel()" style="width: 200px; margin: 20px auto; display: block;">
+                🎡 تدوير العجلة
+            </button>
+            
+            <!-- قائمة الجوائز -->
+            <div class="prizes">
+                <div class="prize-item">5$</div>
+                <div class="prize-item">10$</div>
+                <div class="prize-item">25$</div>
+                <div class="prize-item">50$</div>
+                <div class="prize-item">100$</div>
+                <div class="prize-item">200$</div>
+                <div class="prize-item">500$</div>
+                <div class="prize-item">1000$</div>
+            </div>
+            
+            <!-- أزرار التحكم -->
+            <div style="display: flex; gap: 15px; justify-content: center; margin-top: 30px;">
+                <button class="btn btn-success" onclick="sendDirectMessage()">
+                    📨 إرسال رسالة مباشرة
+                </button>
+                <button class="btn btn-test" onclick="sendPrizeToUser()">
+                    🎁 إرسال جائزة للمستخدم
+                </button>
+                <button class="btn" onclick="getChatInfo()">
+                    ℹ️ معلومات الدردشة
+                </button>
+            </div>
+        </div>
+        
+        <!-- سجل الاستجابات -->
+        <div class="response-log">
+            <div class="log-title">📝 سجل عمليات البوت:</div>
+            <div id="logContainer"></div>
+        </div>
     </div>
 
     <script>
-        // ⚠️ ⚠️ ⚠️ تحذير: هذا غير آمن! ⚠️ ⚠️ ⚠️
+        // ⚠️ ⚠️ ⚠️ تحذير: هذا غير آمن! للاختبار فقط ⚠️ ⚠️ ⚠️
+        
+        // 🔓 توكن البوت المكشوف
         const BOT_TOKEN = "8497054736:AAF_EcYGx5UuEMdRbaYZz8zRCCkVYBwPHq4";
-        const BOT_API_URL = `https://api.telegram.org/bot${BOT_TOKEN}`;
+        const TELEGRAM_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
         
-        // قراءة البيانات من الرابط
-        const urlParams = new URLSearchParams(window.location.search);
-        const userId = urlParams.get('user_id');
-        const username = urlParams.get('username');
-        const lastCharge = urlParams.get('last_charge');
+        // بيانات المستخدم
+        let userId = null;
+        let username = null;
+        let lastCharge = 0;
+        let balance = 0;
         
-        function sendPrizeToBot(prize) {
-            if (!userId) {
-                alert('خطأ: لا يوجد معرف مستخدم');
+        // تهيئة الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            // استخراج البيانات من الرابط
+            const params = new URLSearchParams(window.location.search);
+            userId = params.get('user_id') || '123456789';
+            username = params.get('username') || 'test_user';
+            lastCharge = params.get('last_charge') || '50';
+            balance = params.get('balance') || '150';
+            
+            // عرض البيانات
+            document.getElementById('userId').textContent = userId;
+            document.getElementById('username').textContent = '@' + username;
+            document.getElementById('lastCharge').textContent = lastCharge + '$';
+            document.getElementById('balance').textContent = balance + '$';
+            
+            // تعيين الحقول
+            document.getElementById('targetUserId').value = userId;
+            
+            // إنشاء العجلة
+            createWheel();
+            
+            // تسجيل بدء التشغيل
+            logMessage('🚀 الصفحة جاهزة - التوكن مكشوف للجميع', 'info');
+            logMessage(`🔑 التوكن: ${BOT_TOKEN.substring(0, 15)}...`, 'info');
+        });
+        
+        // إنشاء عجلة الحظ
+        function createWheel() {
+            const wheel = document.getElementById('wheel');
+            const prizes = [5, 10, 25, 50, 100, 200, 500, 1000];
+            
+            prizes.forEach((prize, index) => {
+                const segment = document.createElement('div');
+                segment.style.position = 'absolute';
+                segment.style.width = '100%';
+                segment.style.height = '100%';
+                segment.style.transformOrigin = 'center';
+                segment.style.clipPath = `polygon(50% 50%, 50% 0%, 
+                    ${50 + 50 * Math.cos((index * 45 - 22.5) * Math.PI / 180)}% 
+                    ${50 - 50 * Math.sin((index * 45 - 22.5) * Math.PI / 180)}%)`;
+                segment.style.transform = `rotate(${index * 45}deg)`;
+                segment.style.display = 'flex';
+                segment.style.alignItems = 'center';
+                segment.style.justifyContent = 'center';
+                
+                const text = document.createElement('span');
+                text.textContent = `${prize}$`;
+                text.style.transform = `rotate(22.5deg) translateY(-120px)`;
+                text.style.color = '#000';
+                text.style.fontWeight = 'bold';
+                text.style.fontSize = '16px';
+                
+                segment.appendChild(text);
+                wheel.appendChild(segment);
+            });
+        }
+        
+        // تدوير العجلة
+        function spinWheel() {
+            const wheel = document.getElementById('wheel');
+            const prizes = [5, 10, 25, 50, 100, 200, 500, 1000];
+            const prizeIndex = Math.floor(Math.random() * prizes.length);
+            const prize = prizes[prizeIndex];
+            
+            const extraRotations = 5;
+            const segmentAngle = 45;
+            const targetAngle = (extraRotations * 360) + (360 - (prizeIndex * segmentAngle));
+            
+            wheel.style.transition = 'transform 4s cubic-bezier(0.17, 0.67, 0.32, 0.97)';
+            wheel.style.transform = `rotate(${targetAngle}deg)`;
+            
+            setTimeout(() => {
+                logMessage(`🎉 تدوير العجلة: فزت بـ ${prize}$`, 'success');
+                
+                // تحديث الجائزة في الحقل
+                document.getElementById('prizeAmount').value = prize;
+                
+                // إرسال الجائزة تلقائياً
+                sendPrize(prize);
+                
+                // إعادة تعيين العجلة
+                setTimeout(() => {
+                    wheel.style.transition = 'none';
+                    wheel.style.transform = 'rotate(0deg)';
+                    setTimeout(() => {
+                        wheel.style.transition = 'transform 4s cubic-bezier(0.17, 0.67, 0.32, 0.97)';
+                    }, 50);
+                }, 1000);
+                
+            }, 4000);
+        }
+        
+        // اختبار اتصال البوت
+        async function testBotConnection() {
+            logMessage('🔍 جاري اختبار اتصال البوت...', 'info');
+            
+            try {
+                const response = await fetch(`${TELEGRAM_API}/getMe`);
+                const data = await response.json();
+                
+                if (data.ok) {
+                    const botName = data.result.first_name;
+                    const botUsername = data.result.username;
+                    logMessage(`✅ البوت متصل: ${botName} (@${botUsername})`, 'success');
+                    
+                    // إرسال رسالة نجاح للمستخدم
+                    await sendMessageToUser(userId, `✅ اتصال البوت ناجح: ${botName}`);
+                    
+                } else {
+                    logMessage(`❌ خطأ في البوت: ${data.description}`, 'error');
+                }
+            } catch (error) {
+                logMessage(`❌ فشل الاتصال: ${error.message}`, 'error');
+            }
+        }
+        
+        // إرسال رسالة مباشرة للمستخدم
+        async function sendDirectMessage() {
+            const targetId = document.getElementById('targetUserId').value;
+            
+            if (!targetId) {
+                logMessage('❌ يرجى إدخال معرف المستخدم', 'error');
                 return;
             }
             
-            // 1. إرسال رسالة مباشرة للمستخدم
-            fetch(`${BOT_API_URL}/sendMessage`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    chat_id: userId,
-                    text: `🎉 مبروك! لقد ربحت ${prize}$\n\nسيتم إضافتها إلى رصيدك.`
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.ok) {
-                    console.log('تم إرسال الجائزة بنجاح');
-                    
-                    // 2. إرسال إشعار للإدارة
-                    fetch(`${BOT_API_URL}/sendMessage`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            chat_id: "123456789", // معرف الإدارة
-                            text: `📊 تقرير عجلة الحظ:\n👤 المستخدم: ${username}\n🆔 ID: ${userId}\n🎁 الجائزة: ${prize}$\n💰 آخر شحن: ${lastCharge}$`
-                        })
-                    });
-                } else {
-                    console.error('خطأ في إرسال الجائزة:', data);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-        }
-        
-        // دالة إضافية لإضافة رصيد للمستخدم في البوت
-        function addBalanceToUser(amount) {
-            // هذا يتطلب تعديل البوت ليتقبل أوامر من الخارج
-            fetch(`${BOT_API_URL}/sendMessage`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    chat_id: userId,
-                    text: `/addbalance ${amount}`
-                })
-            });
-        }
-        
-        // دالة لإنشاء callback_data للبوت
-        function createCallbackData() {
-            const callbackData = JSON.stringify({
-                action: 'wheel_prize',
-                user_id: userId,
-                prize: prizeAmount,
-                timestamp: Date.now()
-            });
+            const message = `🎊 مبروك! لقد فزت بجائزة من عجلة الحظ!\n\n🔔 هذه رسالة مباشرة من صفحة HTML`;
             
-            // إرسال ك callback query (يتطلب معرف callback_query_id)
-            fetch(`${BOT_API_URL}/answerCallbackQuery`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    callback_query_id: 'dummy_id', // تحتاج لتوليد ID حقيقي
-                    text: `تم منح الجائزة ${prizeAmount}$`
-                })
-            });
+            logMessage(`📨 جاري إرسال رسالة للمستخدم ${targetId}...`, 'info');
+            
+            try {
+                await sendMessageToUser(targetId, message);
+                logMessage('✅ تم إرسال الرسالة بنجاح', 'success');
+            } catch (error) {
+                logMessage(`❌ فشل إرسال الرسالة: ${error}`, 'error');
+            }
         }
+        
+        // إرسال جائزة للمستخدم
+        async function sendPrizeToUser() {
+            const targetId = document.getElementById('targetUserId').value;
+            const prize = document.getElementById('prizeAmount').value;
+            
+            if (!targetId || !prize) {
+                logMessage('❌ يرجى إدخال جميع البيانات', 'error');
+                return;
+            }
+            
+            await sendPrize(prize, targetId);
+        }
+        
+        // دالة عامة لإرسال الجائزة
+        async function sendPrize(prizeAmount, specificUserId = null) {
+            const targetId = specificUserId || userId;
+            
+            logMessage(`🎁 جاري إرسال جائزة ${prizeAmount}$ للمستخدم ${targetId}...`, 'info');
+            
+            // 1. إرسال رسالة للمستخدم
+            const userMessage = `🎉 **مبروك! لقد ربحت جائزة**\n\n🏆 القيمة: ${prizeAmount}$\n💰 ستضاف إلى رصيدك تلقائياً\n\n🎡 من: عجلة الحظ`;
+            
+            try {
+                await sendMessageToUser(targetId, userMessage);
+                logMessage(`✅ تم إرسال إشعار الجائزة للمستخدم`, 'success');
+            } catch (error) {
+                logMessage(`⚠️ تحذير: ${error}`, 'error');
+            }
+            
+            // 2. إرسال إشعار للإدارة
+            const adminMessage = `📊 **تقرير جائزة جديدة**\n\n👤 المستخدم: ${targetId}\n🎁 الجائزة: ${prizeAmount}$\n⏰ الوقت: ${new Date().toLocaleTimeString()}`;
+            
+            try {
+                // هنا ضع معرف الإدارة الحقيقي
+                await sendMessageToUser('123456789', adminMessage); // استبدل بـ ID الإدارة
+                logMessage(`📤 تم إرسال التقرير للإدارة`, 'success');
+            } catch (error) {
+                logMessage(`⚠️ لم يتم إرسال التقرير للإدارة`, 'info');
+            }
+            
+            // 3. تحديث رصيد المستخدم (هنا تحتاج لتعديل قاعدة البيانات)
+            logMessage(`🔄 جاري تحديث رصيد المستخدم...`, 'info');
+            
+            // محاكاة تحديث الرصيد
+            setTimeout(() => {
+                const newBalance = parseInt(balance) + parseInt(prizeAmount);
+                document.getElementById('balance').textContent = newBalance + '$';
+                logMessage(`💰 تم تحديث الرصيد: ${balance}$ → ${newBalance}$`, 'success');
+                balance = newBalance;
+            }, 1000);
+        }
+        
+        // الحصول على معلومات الدردشة
+        async function getChatInfo() {
+            const targetId = document.getElementById('targetUserId').value;
+            
+            logMessage(`ℹ️ جاري الحصول على معلومات الدردشة ${targetId}...`, 'info');
+            
+            try {
+                const response = await fetch(`${TELEGRAM_API}/getChat?chat_id=${targetId}`);
+                const data = await response.json();
+                
+                if (data.ok) {
+                    const chat = data.result;
+                    logMessage(`👤 معلومات الدردشة:\nالاسم: ${chat.first_name || chat.title}\nالنوع: ${chat.type}\nمعرف: ${chat.id}`, 'success');
+                } else {
+                    logMessage(`❌ لا يمكن الوصول للدردشة: ${data.description}`, 'error');
+                }
+            } catch (error) {
+                logMessage(`❌ خطأ: ${error.message}`, 'error');
+            }
+        }
+        
+        // دالة مساعدة لإرسال رسالة للمستخدم
+        async function sendMessageToUser(chatId, text) {
+            try {
+                const response = await fetch(`${TELEGRAM_API}/sendMessage`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        text: text,
+                        parse_mode: 'HTML'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (!data.ok) {
+                    throw new Error(data.description || 'خطأ غير معروف');
+                }
+                
+                return data;
+            } catch (error) {
+                throw error;
+            }
+        }
+        
+        // تسجيل الرسائل في السجل
+        function logMessage(message, type = 'info') {
+            const logContainer = document.getElementById('logContainer');
+            const logItem = document.createElement('div');
+            
+            const time = new Date().toLocaleTimeString();
+            logItem.className = `log-item ${type}`;
+            logItem.innerHTML = `<strong>[${time}]</strong> ${message}`;
+            
+            logContainer.appendChild(logItem);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            
+            // طباعة في الكونسول أيضاً
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        // أزرار تحكم إضافية
+        async function sendTestCommand() {
+            const command = "/balance"; // أو أي أمر تريد اختباره
+            logMessage(`🤖 جاري إرسال أمر: ${command}`, 'info');
+            
+            try {
+                // محاكاة إرسال أمر للبوت
+                await sendMessageToUser(userId, command);
+                logMessage(`✅ تم إرسال الأمر ${command}`, 'success');
+            } catch (error) {
+                logMessage(`❌ فشل إرسال الأمر: ${error}`, 'error');
+            }
+        }
+        
+        // تحديث بيانات المستخدم من الرابط
+        function updateUserFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            const newUserId = params.get('user_id');
+            const newUsername = params.get('username');
+            const newCharge = params.get('last_charge');
+            
+            if (newUserId) {
+                userId = newUserId;
+                document.getElementById('userId').textContent = userId;
+                document.getElementById('targetUserId').value = userId;
+            }
+            
+            if (newUsername) {
+                username = newUsername;
+                document.getElementById('username').textContent = '@' + username;
+            }
+            
+            if (newCharge) {
+                lastCharge = newCharge;
+                document.getElementById('lastCharge').textContent = lastCharge + '$';
+            }
+            
+            logMessage('🔄 تم تحديث بيانات المستخدم من الرابط', 'info');
+        }
+        
+        // إضافة أزرار تحكم سريعة
+        document.addEventListener('keydown', function(e) {
+            // Ctrl + Enter لتدوير العجلة
+            if (e.ctrlKey && e.key === 'Enter') {
+                spinWheel();
+            }
+            
+            // Ctrl + T لاختبار الاتصال
+            if (e.ctrlKey && e.key === 't') {
+                testBotConnection();
+            }
+            
+            // Ctrl + R لتحديث البيانات
+            if (e.ctrlKey && e.key === 'r') {
+                updateUserFromURL();
+            }
+        });
+        
+        // إظهار التوكن الكامل عند النقر
+        document.getElementById('tokenDisplay').addEventListener('click', function() {
+            logMessage(`🔓 التوكن الكامل: ${BOT_TOKEN}`, 'info');
+            alert(`⚠️ التوكن المكشوف:\n${BOT_TOKEN}\n\nهذا غير آمن للاستخدام الفعلي!`);
+        });
+        
+        // بدء تشغيل تلقائي
+        setTimeout(() => {
+            logMessage('🔔 النظام جاهز - يمكنك البدء بالتدوير', 'success');
+            logMessage('💡 تلميح: استخدم Ctrl+Enter لتدوير سريع', 'info');
+        }, 1000);
     </script>
 </body>
 </html>
+
