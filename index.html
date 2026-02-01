@@ -4,16 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pit_Bot - عجلة الحظ</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&family=Changa:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap');
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
-            font-family: 'Changa', 'Cairo', sans-serif;
+            font-family: 'Cairo', sans-serif;
             background: url('https://i.postimg.cc/wB7MWQsq/IMG-20260129-003341-890.jpg') no-repeat center center fixed;
             background-size: cover;
             min-height: 100vh;
@@ -21,150 +20,109 @@
             justify-content: center;
             align-items: center;
             padding: 20px;
-            overflow: hidden;
         }
-
-        /* حاوية رئيسية بدون خلفية بيضاء */
-        .main-container {
+        .container {
+            background: transparent;
+            border-radius: 30px;
+            padding: 20px;
+            max-width: 550px;
             width: 100%;
-            max-width: 500px;
             text-align: center;
             position: relative;
+            border: 6px solid transparent;
+            background-clip: padding-box;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.5);
         }
-
-        /* الإطار الذهبي المحسن */
-        .gold-frame {
-            position: relative;
-            padding: 25px;
-            border-radius: 30px;
-            background: linear-gradient(45deg, 
-                #FFD700 0%, 
-                #FFA500 20%, 
-                #FFD700 40%, 
-                #FFA500 60%, 
-                #FFD700 80%, 
-                #FFA500 100%);
-            margin-bottom: 20px;
-            box-shadow: 
-                0 0 50px rgba(255, 215, 0, 0.7),
-                0 0 100px rgba(255, 165, 0, 0.4),
-                inset 0 0 30px rgba(255, 255, 255, 0.5);
-            animation: goldFrameGlow 3s infinite alternate;
-            border: 3px solid #FFF;
-        }
-
-        @keyframes goldFrameGlow {
-            0% {
-                box-shadow: 
-                    0 0 40px rgba(255, 215, 0, 0.6),
-                    0 0 80px rgba(255, 165, 0, 0.3),
-                    inset 0 0 20px rgba(255, 255, 255, 0.4);
-            }
-            100% {
-                box-shadow: 
-                    0 0 60px rgba(255, 215, 0, 0.9),
-                    0 0 120px rgba(255, 165, 0, 0.6),
-                    inset 0 0 40px rgba(255, 255, 255, 0.7);
-            }
-        }
-
-        .logo {
-            font-family: 'Changa', sans-serif;
-            font-size: 3.5em;
-            font-weight: 700;
-            color: #000;
-            text-shadow: 
-                3px 3px 0 #FFD700,
-                6px 6px 10px rgba(0, 0, 0, 0.3);
-            margin-bottom: 20px;
-            letter-spacing: 2px;
-            position: relative;
-            display: inline-block;
-        }
-
-        .logo::after {
+        .container::before {
             content: '';
             position: absolute;
+            top: -8px;
+            left: -8px;
+            right: -8px;
             bottom: -8px;
-            left: 10%;
-            right: 10%;
-            height: 4px;
-            background: linear-gradient(90deg, 
-                transparent, 
-                #FFD700, 
-                #FFA500, 
-                #FFD700, 
-                transparent);
-            border-radius: 2px;
+            background: linear-gradient(45deg, #FFD700, #FFA500, #FFEC8B, #FFD700);
+            border-radius: 35px;
+            z-index: -1;
+            animation: goldGlow 3s infinite alternate;
         }
-
+        @keyframes goldGlow {
+            0% {
+                box-shadow: 0 0 25px #FFD700, 0 0 40px #FFA500;
+                opacity: 0.8;
+            }
+            100% {
+                box-shadow: 0 0 40px #FFD700, 0 0 60px #FFA500, 0 0 80px #FFEC8B;
+                opacity: 1;
+            }
+        }
+        .logo {
+            font-family: 'Cairo', sans-serif;
+            font-size: 4em;
+            font-weight: 900;
+            color: #000;
+            text-shadow: 4px 4px 0 #FFD700, 8px 8px 15px rgba(255, 215, 0, 0.5);
+            margin-bottom: 20px;
+            letter-spacing: 3px;
+        }
+        .user-info {
+            background: linear-gradient(135deg, rgba(106, 17, 203, 0.85) 0%, rgba(37, 117, 252, 0.85) 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 20px;
+            margin: 20px 0;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            border: 3px solid #FFD700;
+        }
+        .user-info h3 {
+            font-size: 1.4em;
+            margin-bottom: 10px;
+        }
+        .user-info p {
+            font-size: 1.2em;
+            margin: 8px 0;
+        }
+        .deposit-info {
+            background: rgba(248, 249, 250, 0.9);
+            border: 3px solid #28a745;
+            border-radius: 18px;
+            padding: 18px;
+            margin: 20px 0;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+        .deposit-amount {
+            font-size: 1.8em;
+            color: #28a745;
+            font-weight: 800;
+        }
         .wheel-container {
             position: relative;
             width: 320px;
             height: 320px;
             margin: 30px auto;
-            padding: 10px;
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 50%;
-            backdrop-filter: blur(5px);
         }
-
         #wheel {
             width: 100%;
             height: 100%;
             border-radius: 50%;
             position: relative;
             overflow: hidden;
-            background: linear-gradient(135deg, 
-                #c0c0c0 0%, 
-                #e0e0e0 50%, 
-                #c0c0c0 100%);
-            box-shadow: 
-                0 0 40px rgba(0, 150, 255, 0.6),
-                inset 0 0 50px rgba(255, 255, 255, 0.9);
+            background: linear-gradient(135deg, #c0c0c0 0%, #f0f8ff 100%);
+            box-shadow: 0 0 40px rgba(0, 150, 255, 0.7);
             transition: transform 5s cubic-bezier(0.17, 0.67, 0.83, 0.67);
-            border: 15px solid linear-gradient(45deg, 
-                #a0c8f0 0%, 
-                #87CEEB 50%, 
-                #a0c8f0 100%);
-            position: relative;
+            border: 10px solid #1E90FF;
         }
-
-        #wheel::before {
-            content: '';
-            position: absolute;
-            top: 5px;
-            left: 5px;
-            right: 5px;
-            bottom: 5px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, 
-                #87CEEB 0%, 
-                #a0c8f0 50%, 
-                #87CEEB 100%);
-            z-index: 1;
-        }
-
         #wheel.spinning {
-            animation: wheelSpinEffect 1s infinite alternate;
+            animation: wheelGlow 0.6s infinite alternate;
         }
-
-        @keyframes wheelSpinEffect {
+        @keyframes wheelGlow {
             0% {
-                box-shadow: 
-                    0 0 40px rgba(0, 150, 255, 0.6),
-                    inset 0 0 50px rgba(255, 255, 255, 0.9),
-                    0 0 30px rgba(120, 200, 255, 0.5);
+                box-shadow: 0 0 40px rgba(30, 144, 255, 0.7);
             }
             100% {
-                box-shadow: 
-                    0 0 60px rgba(0, 150, 255, 0.9),
-                    inset 0 0 50px rgba(255, 255, 255, 0.9),
-                    0 0 50px rgba(120, 200, 255, 0.8);
+                box-shadow: 0 0 70px rgba(30, 144, 255, 1), 0 0 100px rgba(192, 192, 192, 0.8);
             }
         }
-
-        .wheel-section {
+        .wheel-item {
             position: absolute;
             width: 50%;
             height: 50%;
@@ -174,618 +132,326 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
-            border-right: 3px solid rgba(255, 255, 255, 0.7);
-            z-index: 2;
+            color: white;
+            font-weight: bold;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+            font-size: 1.5em;
         }
-
-        /* ألوان متناوبة فضي وأزرق فاتح */
-        .wheel-section:nth-child(odd) {
-            background: linear-gradient(45deg, 
-                rgba(192, 192, 192, 0.9) 0%, 
-                rgba(224, 224, 224, 0.9) 100%);
-        }
-
-        .wheel-section:nth-child(even) {
-            background: linear-gradient(45deg, 
-                rgba(135, 206, 235, 0.9) 0%, 
-                rgba(160, 200, 240, 0.9) 100%);
-        }
-
-        .section-text {
-            color: #000;
-            font-weight: 800;
-            font-size: 1.4em;
-            text-shadow: 
-                2px 2px 3px rgba(255, 255, 255, 0.8),
-                -1px -1px 2px rgba(0, 0, 0, 0.2);
-            font-family: 'Changa', sans-serif;
-            letter-spacing: 1px;
+        .wheel-item span {
             transform: rotate(45deg);
+            color: #000;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 900;
+            font-size: 1.8em;
+            text-shadow: 1px 1px 2px #fff;
         }
-
         .pointer {
             position: absolute;
-            top: -40px;
+            top: -35px;
             left: 50%;
             transform: translateX(-50%);
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 50px;
             z-index: 10;
             color: #FFD700;
             font-size: 3em;
-            filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.9));
-            animation: pointerAnimation 2s infinite;
-            text-shadow: 
-                0 0 10px #FFA500,
-                0 0 20px #FFD700;
+            filter: drop-shadow(0 0 10px #FFA500);
         }
-
-        @keyframes pointerAnimation {
-            0%, 100% {
-                transform: translateX(-50%) scale(1) rotate(0deg);
-            }
-            50% {
-                transform: translateX(-50%) scale(1.1) rotate(5deg);
-            }
-        }
-
-        .center-circle {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #FFD700, #FFA500);
-            border-radius: 50%;
-            z-index: 3;
-            box-shadow: 
-                0 0 20px rgba(255, 215, 0, 0.8),
-                inset 0 0 10px rgba(255, 255, 255, 0.5);
-            border: 3px solid white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 1.2em;
-        }
-
         .spin-btn {
-            background: linear-gradient(135deg, 
-                #FF416C 0%, 
-                #FF4B2B 100%);
+            background: linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%);
             color: white;
             border: none;
             padding: 18px 50px;
             font-size: 1.4em;
-            border-radius: 50px;
+            border-radius: 60px;
             cursor: pointer;
             margin: 25px 0;
             transition: all 0.3s;
-            font-weight: 700;
-            box-shadow: 
-                0 5px 25px rgba(255, 65, 108, 0.6),
-                0 0 15px rgba(255, 75, 43, 0.4);
-            font-family: 'Changa', sans-serif;
-            letter-spacing: 1px;
-            position: relative;
-            overflow: hidden;
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            font-weight: 800;
+            box-shadow: 0 10px 25px rgba(255, 65, 108, 0.6);
+            border: 3px solid #FFD700;
         }
-
         .spin-btn:hover {
             transform: scale(1.08);
-            box-shadow: 
-                0 8px 30px rgba(255, 65, 108, 0.8),
-                0 0 20px rgba(255, 75, 43, 0.6);
+            box-shadow: 0 15px 35px rgba(255, 65, 108, 0.9);
         }
-
-        .spin-btn:active {
-            transform: scale(0.98);
-        }
-
         .spin-btn:disabled {
-            background: #888;
+            background: #aaaaaa;
             cursor: not-allowed;
             transform: none;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: none;
+            border-color: #999;
         }
-
         .result {
             margin-top: 25px;
             padding: 20px;
-            background: linear-gradient(135deg, 
-                rgba(0, 176, 155, 0.9) 0%, 
-                rgba(150, 201, 61, 0.9) 100%);
+            background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%);
             color: white;
             border-radius: 20px;
             display: none;
-            animation: resultAppear 0.5s;
-            box-shadow: 
-                0 5px 20px rgba(0, 176, 155, 0.5),
-                inset 0 0 10px rgba(255, 255, 255, 0.3);
-            border: 2px solid rgba(255, 255, 255, 0.4);
-            backdrop-filter: blur(10px);
+            animation: fadeIn 0.6s;
+            border: 3px solid #FFD700;
         }
-
-        @keyframes resultAppear {
-            from { 
-                opacity: 0; 
-                transform: translateY(30px) scale(0.9); 
-            }
-            to { 
-                opacity: 1; 
-                transform: translateY(0) scale(1); 
-            }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
-
         .prize-amount {
             font-size: 2.5em;
-            font-weight: 700;
-            margin: 10px 0;
-            text-shadow: 
-                2px 2px 5px rgba(0, 0, 0, 0.3),
-                0 0 10px rgba(255, 255, 255, 0.5);
+            font-weight: 900;
+            margin: 15px 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
-
-        .user-stats {
-            background: linear-gradient(135deg, 
-                rgba(106, 17, 203, 0.85) 0%, 
-                rgba(37, 117, 252, 0.85) 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 20px;
-            margin: 20px 0;
-            box-shadow: 
-                0 5px 20px rgba(0, 0, 0, 0.3),
-                inset 0 0 15px rgba(255, 255, 255, 0.2);
-            border: 2px solid rgba(255, 215, 0, 0.5);
-            backdrop-filter: blur(10px);
-        }
-
-        .user-stats h3 {
-            color: #FFD700;
-            margin-bottom: 15px;
-            font-size: 1.3em;
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
-        }
-
-        .stat-item {
-            margin: 10px 0;
-            font-size: 1.1em;
-            display: flex;
-            justify-content: space-between;
-            padding: 5px 0;
-            border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
-        }
-
-        .stat-value {
-            color: #FFD700;
-            font-weight: 600;
-        }
-
-        .sound-control {
+        .notification {
             position: fixed;
-            top: 20px;
-            left: 20px;
-            background: linear-gradient(135deg, 
-                rgba(255, 215, 0, 0.9) 0%, 
-                rgba(255, 165, 0, 0.9) 100%);
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 
-                0 5px 20px rgba(255, 215, 0, 0.5),
-                0 0 10px rgba(255, 165, 0, 0.3);
-            z-index: 1000;
-            border: 2px solid white;
-            transition: all 0.3s;
-        }
-
-        .sound-control:hover {
-            transform: scale(1.1);
-            box-shadow: 
-                0 8px 25px rgba(255, 215, 0, 0.7),
-                0 0 15px rgba(255, 165, 0, 0.5);
-        }
-
-        .sound-control i {
-            font-size: 1.5em;
+            top: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ff4444;
             color: white;
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+            padding: 18px 30px;
+            border-radius: 12px;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 10px 25px rgba(255, 68, 68, 0.5);
+            border: 2px solid #FFD700;
         }
-
-        @media (max-width: 600px) {
-            .wheel-container {
-                width: 280px;
-                height: 280px;
-            }
-            
-            .logo {
-                font-size: 2.8em;
-            }
-            
-            .spin-btn {
-                padding: 15px 40px;
-                font-size: 1.2em;
-            }
-            
-            .section-text {
-                font-size: 1.1em;
-            }
+        .prizes-list {
+            background: rgba(248, 249, 250, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 25px;
+            text-align: right;
+            border: 3px solid #FFD700;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        .prizes-list h4 {
+            color: #333;
+            font-size: 1.6em;
+            margin-bottom: 15px;
+            border-bottom: 3px solid #FFD700;
+            padding-bottom: 10px;
         }
     </style>
 </head>
 <body>
-    <!-- زر التحكم بالصوت -->
-    <div class="sound-control" id="soundToggle">
-        <i>🔊</i>
-    </div>
-
-    <div class="main-container">
-        <!-- الإطار الذهبي المحسن -->
-        <div class="gold-frame">
-            <div class="logo">Pit_Bot</div>
-            
-            <!-- إحصائيات المستخدم -->
-            <div class="user-stats">
-                <h3>🎯 إحصائيات اللعب</h3>
-                <div class="stat-item">
-                    <span>الرصيد الحالي:</span>
-                    <span class="stat-value" id="balance">0 نقطة</span>
-                </div>
-                <div class="stat-item">
-                    <span>عدد المحاولات:</span>
-                    <span class="stat-value" id="spins">0</span>
-                </div>
-                <div class="stat-item">
-                    <span>آخر ربح:</span>
-                    <span class="stat-value" id="lastWin">0 نقطة</span>
-                </div>
-            </div>
-            
-            <!-- حاوية العجلة -->
-            <div class="wheel-container">
-                <div class="pointer">▼</div>
-                <div id="wheel">
-                    <!-- الأقسام ستُنشأ بالجافاسكريبت -->
-                </div>
-                <div class="center-circle">GO</div>
-            </div>
-            
-            <!-- زر التدوير -->
-            <button class="spin-btn" id="spinButton">🎯 ابدأ الدوران</button>
-            
-            <!-- نتيجة الدوران -->
-            <div class="result" id="result">
-                <h3>🎉 مبروك! فزت بـ</h3>
-                <div class="prize-amount" id="prizeAmount">0 نقطة</div>
-                <p>تم تحديث رصيدك تلقائياً</p>
-            </div>
+    <div class="container">
+        <div class="logo">Pit_Bot</div>
+        
+        <div class="user-info">
+            <h3>معلومات المستخدم</h3>
+            <p>👤 الاسم: <span id="userName">مستخدم</span></p>
+            <p>💰 الرصيد: <span id="userBalance">0</span> $</p>
+        </div>
+        
+        <div class="deposit-info">
+            <h3>المبلغ المودع</h3>
+            <p class="deposit-amount" id="depositAmount">0 $</p>
+        </div>
+        
+        <div class="wheel-container">
+            <div id="wheel"></div>
+            <div class="pointer">▼</div>
+        </div>
+        
+        <button class="spin-btn" id="spinBtn">🎡 ادر العجلة</button>
+        
+        <div class="result" id="resultBox">
+            <h3>🎉 مبروك! لقد فزت بـ</h3>
+            <div class="prize-amount" id="prizeAmount">0 $</div>
+            <p>تم إضافة المبلغ إلى رصيدك تلقائياً</p>
+        </div>
+        
+        <div class="prizes-list">
+            <h4>🎁 الجوائز المتاحة</h4>
+            <p>• 10$ - نسبة الربح: 10%</p>
+            <p>• 20$ - نسبة الربح: 8%</p>
+            <p>• 50$ - نسبة الربح: 5%</p>
+            <p>• 100$ - نسبة الربح: 3%</p>
+            <p>• 200$ - نسبة الربح: 2%</p>
+            <p>• 500$ - نسبة الربح: 1%</p>
         </div>
     </div>
-
-    <!-- أصوات العجلة -->
-    <audio id="wheelSound" preload="auto">
-        <source src="https://assets.mixkit.co/sfx/preview/mixkit-spinning-wheel-909.mp3" type="audio/mpeg">
-    </audio>
     
-    <audio id="winSound" preload="auto">
-        <source src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3" type="audio/mpeg">
-    </audio>
+    <div class="notification" id="notification"></div>
+    
+    <audio id="wheelSound" src="https://assets.mixkit.co/sfx/preview/mixkit-spinning-wheel-909.mp3" preload="auto"></audio>
 
     <script>
-        // ============== إعدادات البوت ==============
-        // توكن البوت - يبقى في الكود للتواصل المباشر
+        // التوكن الخاص بالبوت - يجب استبداله بالتوكن الفعلي
         const BOT_TOKEN = "8412416342:AAHOsPs5eqcaj5e-WpZHafMbhGYZI4mWiu0";
-        const BOT_API_URL = `https://api.telegram.org/bot${BOT_TOKEN}`;
+        const CHAT_ID = "-1002791149961"; // يجب الحصول على هذا من البوت
         
-        // معلمات المستخدم من الرابط
-        const urlParams = new URLSearchParams(window.location.search);
-        const userId = urlParams.get('user_id') || 'default_user';
-        const userToken = urlParams.get('token') || '';
-        
-        // ============== بيانات الجوائز ==============
+        // الجوائز ونسب الربح (النسبة تحدد حجم القطعة، كلها متساوية الحجم)
         const prizes = [
-            { name: "Pit_Bot", value: 5000, color: "silver" },
-            { name: "Pit_Bot", value: 10000, color: "blue" },
-            { name: "Pit_Bot", value: 20000, color: "silver" },
-            { name: "Pit_Bot", value: 50000, color: "blue" },
-            { name: "Pit_Bot", value: 0, color: "silver" },
-            { name: "Pit_Bot", value: 1000, color: "blue" },
-            { name: "Pit_Bot", value: 500, color: "silver" },
-            { name: "Pit_Bot", value: 2000, color: "blue" }
+            { amount: 10, profitRate: 10, color: '#E0F7FA' },
+            { amount: 20, profitRate: 8, color: '#B3E5FC' },
+            { amount: 50, profitRate: 5, color: '#81D4FA' },
+            { amount: 100, profitRate: 3, color: '#4FC3F7' },
+            { amount: 200, profitRate: 2, color: '#29B6F6' },
+            { amount: 500, profitRate: 1, color: '#03A9F4' }
         ];
         
-        // ============== متغيرات النظام ==============
-        let isSpinning = false;
-        let currentBalance = 0;
-        let totalSpins = 0;
-        let soundEnabled = true;
-        let wheelSound = document.getElementById('wheelSound');
-        let winSound = document.getElementById('winSound');
+        const wheel = document.getElementById('wheel');
+        const spinBtn = document.getElementById('spinBtn');
+        const resultBox = document.getElementById('resultBox');
+        const prizeAmount = document.getElementById('prizeAmount');
+        const wheelSound = document.getElementById('wheelSound');
+        const notification = document.getElementById('notification');
         
-        // ============== تهيئة العجلة ==============
+        // بيانات المستخدم (ستأتي من البوت)
+        let userBalance = 1000; // مثال
+        let depositAmount = 50; // مثال
+        
+        // تهيئة العجلة
         function initWheel() {
-            const wheel = document.getElementById('wheel');
             wheel.innerHTML = '';
-            
-            const totalSections = prizes.length;
-            const anglePerSection = 360 / totalSections;
+            const totalPrizes = prizes.length;
+            const anglePerPrize = 360 / totalPrizes;
             
             prizes.forEach((prize, index) => {
-                const section = document.createElement('div');
-                section.className = 'wheel-section';
+                const item = document.createElement('div');
+                item.className = 'wheel-item';
                 
-                // حساب زاوية القسم
-                const rotateAngle = index * anglePerSection;
-                const skewAngle = 90 - anglePerSection;
+                // حساب الزاوية لكل قسم (جميع الأقسام متساوية)
+                const startAngle = index * anglePerPrize;
+                const endAngle = (index + 1) * anglePerPrize;
+                const midAngle = startAngle + anglePerPrize / 2;
                 
-                section.style.transform = `rotate(${rotateAngle}deg) skewY(${skewAngle}deg)`;
+                item.style.transform = `rotate(${startAngle}deg)`;
+                item.style.backgroundColor = prize.color;
                 
-                // إضافة نص Pit_Bot
-                const text = document.createElement('div');
-                text.className = 'section-text';
-                text.textContent = prize.name;
-                text.style.transform = `skewY(${-skewAngle}deg) rotate(${anglePerSection / 2}deg)`;
-                text.style.color = '#000000';
-                text.style.fontWeight = '800';
-                text.style.textShadow = '2px 2px 3px rgba(255, 255, 255, 0.8)';
+                // إضافة نص Pit_Bot بدلاً من قيمة الجائزة
+                const text = document.createElement('span');
+                text.textContent = 'Pit_Bot';
+                text.style.transform = `rotate(${midAngle}deg)`;
+                text.style.color = '#000';
+                text.style.fontWeight = '900';
+                text.style.fontSize = '1.8em';
                 
-                section.appendChild(text);
-                wheel.appendChild(section);
+                item.appendChild(text);
+                wheel.appendChild(item);
             });
             
-            // تحميل بيانات المستخدم من البوت
-            loadUserData();
+            // تحديث بيانات المستخدم
+            document.getElementById('userBalance').textContent = userBalance + ' $';
+            document.getElementById('depositAmount').textContent = depositAmount + ' $';
         }
         
-        // ============== تحميل بيانات المستخدم من البوت ==============
-        async function loadUserData() {
-            try {
-                // طلب البيانات من البوت
-                const response = await sendToBot('get_user_data', {
-                    user_id: userId,
-                    token: userToken
-                });
-                
-                if (response.success) {
-                    currentBalance = response.data.balance || 0;
-                    totalSpins = response.data.spins || 0;
-                    
-                    // تحديث العرض
-                    document.getElementById('balance').textContent = `${currentBalance.toLocaleString()} نقطة`;
-                    document.getElementById('spins').textContent = totalSpins;
-                    
-                    // تمكين الزر إذا كان الرصيد كافي
-                    const spinButton = document.getElementById('spinButton');
-                    spinButton.disabled = currentBalance < 100;
-                    
-                    if (currentBalance < 100) {
-                        spinButton.textContent = "💰 الرصيد غير كافي";
-                    }
-                }
-            } catch (error) {
-                console.error('خطأ في تحميل البيانات:', error);
-            }
-        }
-        
-        // ============== إرسال البيانات إلى البوت ==============
-        async function sendToBot(action, data) {
-            try {
-                // طريقة مباشرة للتواصل مع البوت
-                const response = await fetch(`/bot-api/${action}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${BOT_TOKEN}`
-                    },
-                    body: JSON.stringify({
-                        ...data,
-                        bot_token: BOT_TOKEN,
-                        timestamp: Date.now()
-                    })
-                });
-                
-                return await response.json();
-            } catch (error) {
-                // طريقة بديلة عبر webhook
-                return await sendViaWebhook(action, data);
-            }
-        }
-        
-        // ============== إرسال عبر Webhook ==============
-        async function sendViaWebhook(action, data) {
-            try {
-                const response = await fetch('https://api.telegram.org/bot' + BOT_TOKEN + '/sendMessage', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        chat_id: userId,
-                        text: `🎰 ${action}: ${JSON.stringify(data)}`,
-                        parse_mode: 'HTML'
-                    })
-                });
-                
-                return { success: true, data: await response.json() };
-            } catch (error) {
-                console.error('Webhook error:', error);
-                return { success: false, error: error.message };
-            }
-        }
-        
-        // ============== تدوير العجلة ==============
-        async function spinWheel() {
-            if (isSpinning || currentBalance < 100) return;
+        // تدوير العجلة
+        spinBtn.addEventListener('click', async () => {
+            if (wheel.classList.contains('spinning')) return;
             
-            isSpinning = true;
-            const wheel = document.getElementById('wheel');
-            const spinButton = document.getElementById('spinButton');
-            const result = document.getElementById('result');
+            spinBtn.disabled = true;
+            resultBox.style.display = 'none';
             
-            // خصم تكلفة الدوران
-            currentBalance -= 100;
-            totalSpins++;
-            
-            // تحديث العرض
-            document.getElementById('balance').textContent = `${currentBalance.toLocaleString()} نقطة`;
-            document.getElementById('spins').textContent = totalSpins;
-            
-            // تعطيل الزر
-            spinButton.disabled = true;
-            spinButton.textContent = "🌀 جاري الدوران...";
-            
-            // إخفاء نتيجة سابقة
-            result.style.display = 'none';
-            
-            // تشغيل صوت العجلة
-            if (soundEnabled) {
-                wheelSound.currentTime = 0;
-                wheelSound.play();
-            }
+            // تشغيل الصوت
+            wheelSound.currentTime = 0;
+            wheelSound.play();
             
             // إضافة تأثير الدوران
             wheel.classList.add('spinning');
             
-            // اختيار جائزة عشوائية
-            const randomPrize = prizes[Math.floor(Math.random() * prizes.length)];
+            // حساب الجائزة العشوائية (بناءً على النسب)
+            const totalRate = prizes.reduce((sum, prize) => sum + prize.profitRate, 0);
+            let random = Math.random() * totalRate;
+            let selectedPrize;
+            
+            for (const prize of prizes) {
+                if (random < prize.profitRate) {
+                    selectedPrize = prize;
+                    break;
+                }
+                random -= prize.profitRate;
+            }
             
             // حساب زاوية الدوران
-            const prizeIndex = prizes.indexOf(randomPrize);
-            const sectorAngle = 360 / prizes.length;
-            const extraRotation = Math.random() * sectorAngle * 0.7;
-            const targetAngle = 360 * 5 + (prizeIndex * sectorAngle) + extraRotation;
+            const prizeIndex = prizes.findIndex(p => p === selectedPrize);
+            const anglePerPrize = 360 / prizes.length;
+            const targetAngle = 360 * 5 + (prizeIndex * anglePerPrize + anglePerPrize/2);
             
             // تطبيق الدوران
-            wheel.style.transition = 'transform 4.5s cubic-bezier(0.2, 0.8, 0.3, 1)';
-            wheel.style.transform = `rotate(${targetAngle}deg)`;
+            wheel.style.transform = `rotate(${-targetAngle}deg)`;
             
-            // إرسال بداية الدوران للبوت
-            await sendToBot('spin_started', {
-                user_id: userId,
-                cost: 100,
-                timestamp: Date.now()
-            });
+            // الانتظار حتى تنتهي الدوران
+            await new Promise(resolve => setTimeout(resolve, 5000));
             
-            // انتظار انتهاء الدوران
-            setTimeout(async () => {
-                wheel.classList.remove('spinning');
+            // إيقاف التأثيرات
+            wheel.classList.remove('spinning');
+            wheelSound.pause();
+            
+            // عرض النتيجة
+            prizeAmount.textContent = selectedPrize.amount + ' $';
+            resultBox.style.display = 'block';
+            
+            // تحديث الرصيد
+            userBalance += selectedPrize.amount;
+            document.getElementById('userBalance').textContent = userBalance + ' $';
+            
+            // إرسال النتيجة إلى البوت
+            await sendToBot(selectedPrize.amount);
+            
+            spinBtn.disabled = false;
+        });
+        
+        // إرسال النتيجة إلى البوت
+        async function sendToBot(amount) {
+            try {
+                const message = `🎉 فاز المستخدم بمبلغ ${amount}$ من عجلة الحظ!\nالرصيد الجديد: ${userBalance}$`;
                 
-                // إضافة الجائزة للرصيد
-                currentBalance += randomPrize.value;
-                
-                // تحديث العرض
-                document.getElementById('balance').textContent = `${currentBalance.toLocaleString()} نقطة`;
-                document.getElementById('lastWin').textContent = `${randomPrize.value.toLocaleString()} نقطة`;
-                
-                // عرض النتيجة
-                const prizeAmount = document.getElementById('prizeAmount');
-                prizeAmount.textContent = randomPrize.value === 0 ? 
-                    "لا شيء هذه المرة 😐" : 
-                    `${randomPrize.value.toLocaleString()} نقطة 🎉`;
-                
-                result.style.display = 'block';
-                
-                // تشغيل صوت الفوز
-                if (soundEnabled && randomPrize.value > 0) {
-                    winSound.currentTime = 0;
-                    winSound.play();
-                }
-                
-                // إرسال نتيجة الدوران للبوت
-                await sendToBot('spin_result', {
-                    user_id: userId,
-                    prize: randomPrize.value,
-                    new_balance: currentBalance,
-                    spin_number: totalSpins,
-                    timestamp: Date.now()
+                // إرسال إلى التليجرام
+                const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: CHAT_ID,
+                        text: message
+                    })
                 });
                 
-                // إعادة تفعيل الزر
-                spinButton.disabled = currentBalance < 100;
-                spinButton.textContent = currentBalance < 100 ? 
-                    "💰 الرصيد غير كافي" : 
-                    "🎯 ابدأ الدوران";
-                
-                isSpinning = false;
-                
-            }, 4500);
+                if (response.ok) {
+                    showNotification('✅ تم إرسال النتيجة إلى البوت بنجاح', 'success');
+                } else {
+                    showNotification('⚠️ حدث خطأ في التواصل مع البوت', 'warning');
+                }
+            } catch (error) {
+                console.error('Error sending to bot:', error);
+                showNotification('❌ فشل التواصل مع البوت', 'error');
+            }
         }
         
-        // ============== التحكم بالصوت ==============
-        document.getElementById('soundToggle').addEventListener('click', function() {
-            soundEnabled = !soundEnabled;
-            const icon = this.querySelector('i');
-            icon.textContent = soundEnabled ? '🔊' : '🔇';
+        // عرض إشعار
+        function showNotification(text, type) {
+            notification.textContent = text;
+            notification.style.background = type === 'success' ? '#4CAF50' : 
+                                          type === 'warning' ? '#FF9800' : '#F44336';
+            notification.style.display = 'block';
             
-            // تأثير عند النقر
-            this.style.transform = 'scale(1.2)';
             setTimeout(() => {
-                this.style.transform = 'scale(1)';
-            }, 200);
-        });
+                notification.style.display = 'none';
+            }, 3000);
+        }
         
-        // ============== تهيئة الصفحة ==============
-        document.addEventListener('DOMContentLoaded', function() {
+        // تهيئة الصفحة
+        document.addEventListener('DOMContentLoaded', initWheel);
+        
+        // محاكاة بيانات من البوت (في الواقع ستأتي من webhook أو API)
+        async function fetchUserData() {
+            // هنا سيتم جلب البيانات الفعلية من البوت
+            // مثال:
+            // const response = await fetch(`/api/user-data?token=${BOT_TOKEN}`);
+            // const data = await response.json();
+            // userBalance = data.balance;
+            // depositAmount = data.deposit;
+            
+            // للتجربة فقط:
+            userBalance = 1250;
+            depositAmount = 75;
             initWheel();
-            
-            // إضافة حدث للزر
-            document.getElementById('spinButton').addEventListener('click', spinWheel);
-            
-            // محاكاة اتصال مباشر مع البوت
-            setInterval(() => {
-                if (!isSpinning) {
-                    // تحديث البيانات كل 30 ثانية
-                    loadUserData();
-                }
-            }, 30000);
-        });
+        }
         
-        // ============== وظائف مساعدة للتواصل مع البوت ==============
-        window.updateFromBot = function(data) {
-            // تستدعى هذه الدالة من البوت مباشرة
-            if (data.balance !== undefined) {
-                currentBalance = data.balance;
-                document.getElementById('balance').textContent = `${currentBalance.toLocaleString()} نقطة`;
-            }
-            
-            if (data.spins !== undefined) {
-                totalSpins = data.spins;
-                document.getElementById('spins').textContent = totalSpins;
-            }
-            
-            // تمكين/تعطيل زر الدوران
-            const spinButton = document.getElementById('spinButton');
-            spinButton.disabled = currentBalance < 100;
-            
-            if (currentBalance < 100) {
-                spinButton.textContent = "💰 الرصيد غير كافي";
-            } else {
-                spinButton.textContent = "🎯 ابدأ الدوران";
-            }
-        };
-        
-        // جعل الوظائف متاحة عالمياً للبوت
-        window.PitBotWheel = {
-            spinWheel,
-            loadUserData,
-            updateFromBot,
-            BOT_TOKEN,
-            userId
-        };
-        
-        console.log('🎰 Pit_Bot Wheel Initialized');
-        console.log('🤖 Bot Token:', BOT_TOKEN);
-        console.log('👤 User ID:', userId);
-        
+        // تحميل بيانات المستخدم عند البدء
+        fetchUserData();
     </script>
 </body>
 </html>
