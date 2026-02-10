@@ -39,34 +39,21 @@
         }
 
         .container {
-            max-width: 800px;
+            max-width: 500px;
             width: 100%;
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
             border-radius: 20px;
-            padding: 30px;
+            padding: 20px;
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
             border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            color: #ffd166;
-            text-shadow: 0 2px 10px rgba(255, 209, 102, 0.5);
-        }
-
-        .subtitle {
-            font-size: 1.1rem;
-            margin-bottom: 30px;
-            color: #a9b7c6;
         }
 
         .wheel-container {
             position: relative;
             width: 400px;
             height: 400px;
-            margin: 0 auto 40px;
+            margin: 0 auto 30px;
         }
 
         .wheel {
@@ -75,13 +62,13 @@
             border-radius: 50%;
             background: conic-gradient(
                 #ffffff 0deg 45deg,
-                #3b82f6 45deg 90deg,
+                #60a5fa 45deg 90deg,
                 #ffffff 90deg 135deg,
-                #3b82f6 135deg 180deg,
+                #60a5fa 135deg 180deg,
                 #ffffff 180deg 225deg,
-                #3b82f6 225deg 270deg,
+                #60a5fa 225deg 270deg,
                 #ffffff 270deg 315deg,
-                #3b82f6 315deg 360deg
+                #60a5fa 315deg 360deg
             );
             position: relative;
             transition: transform 4s cubic-bezier(0.2, 0.8, 0.3, 1);
@@ -107,24 +94,24 @@
             top: 50%;
             left: 50%;
             font-weight: bold;
-            font-size: 16px;
+            font-size: 15px;
             text-align: center;
-            width: 100px;
-            transform-origin: 0 0;
-            transform: rotate(calc(var(--rotation) + 22.5deg)) translateY(-170px) rotate(-90deg);
+            width: 120px;
             height: 30px;
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 2;
+            transform-origin: 0 0;
+            transform: rotate(calc(var(--rotation))) translate(0, -170px) rotate(90deg);
         }
 
         .prize-label:nth-child(odd) {
-            color: #333;
+            color: #1e293b;
         }
 
         .prize-label:nth-child(even) {
-            color: #fff;
+            color: #ffffff;
         }
 
         .spin-button {
@@ -154,12 +141,12 @@
         }
 
         .result {
-            margin-top: 30px;
-            padding: 20px;
+            margin-top: 20px;
+            padding: 15px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 15px;
-            font-size: 1.4rem;
-            min-height: 80px;
+            font-size: 1.2rem;
+            min-height: 60px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -173,22 +160,7 @@
         .timer {
             font-size: 1.1rem;
             color: #ffd166;
-            margin-top: 15px;
-        }
-
-        .loader {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #ff416c;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 10px auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            margin-top: 10px;
         }
 
         @media (max-width: 500px) {
@@ -197,52 +169,16 @@
                 height: 300px;
             }
             
-            h1 {
-                font-size: 2rem;
-            }
-            
             .prize-label {
-                font-size: 14px;
-                width: 80px;
-                transform: rotate(calc(var(--rotation) + 22.5deg)) translateY(-130px) rotate(-90deg);
+                font-size: 12px;
+                width: 90px;
+                transform: rotate(calc(var(--rotation))) translate(0, -130px) rotate(90deg);
             }
-        }
-
-        .user-id-input {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-            padding: 12px 20px;
-            color: white;
-            font-size: 1rem;
-            margin-bottom: 20px;
-            width: 300px;
-            text-align: center;
-            font-family: 'Cairo', sans-serif;
-        }
-
-        .user-id-input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
-
-        .telegram-info {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 20px;
-            font-size: 0.9rem;
-            text-align: center;
-            color: #a9b7c6;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎡 عجلة الحظ</h1>
-        <p class="subtitle">كل 24 ساعة فرصة للفوز بجائزة قيمة! 🎁</p>
-        
-        <input type="text" class="user-id-input" id="userIdInput" placeholder="أدخل معرف Telegram الخاص بك">
-        
         <div class="wheel-container">
             <div class="wheel-pointer"></div>
             <div class="wheel" id="wheel">
@@ -256,41 +192,39 @@
         <div class="result" id="result">
             🔄 انتظر نتيجة التدوير...
         </div>
-
-        <div class="telegram-info">
-            ⚠️ ملاحظة: يجب أن تبدأ محادثة مع البوت أولاً حتى نتمكن من إرسال الجائزة لك
-        </div>
     </div>
 
     <script>
-        // تعريف الجوائز مع نسبها المحددة
+        // الحصول على user_id من رابط URL
+        function getUserIdFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('user_id') || urlParams.get('id') || 'user_default';
+        }
+
+        // تعريف الجوائز مع نسبها المحددة بدقة
         const prizes = [
-            { name: "5,000", value: 5000, percentage: 2, color: "#ffffff" },
-            { name: "10,000", value: 10000, percentage: 0, color: "#3b82f6" },
-            { name: "100,000", value: 100000, percentage: 0, color: "#ffffff" },
-            { name: "500,000", value: 500000, percentage: 0, color: "#3b82f6" },
-            { name: "1,000,000", value: 1000000, percentage: 0, color: "#ffffff" },
-            { name: "حظ أوفر", value: 0, percentage: 95, color: "#3b82f6" },
-            { name: "5% خصم", value: "5%", percentage: 3, color: "#ffffff" },
-            { name: "10% خصم", value: "10%", percentage: 0, color: "#3b82f6" }
+            { name: "5,000", value: 5000, percentage: 2, weight: 2 },
+            { name: "10,000", value: 10000, percentage: 0, weight: 0 },
+            { name: "100,000", value: 100000, percentage: 0, weight: 0 },
+            { name: "500,000", value: 500000, percentage: 0, weight: 0 },
+            { name: "1,000,000", value: 1000000, percentage: 0, weight: 0 },
+            { name: "حظ أوفر", value: 0, percentage: 95, weight: 95 },
+            { name: "5% خصم", value: "5%", percentage: 3, weight: 3 },
+            { name: "10% خصم", value: "10%", percentage: 0, weight: 0 }
         ];
 
-        // إنشاء مصفوفة مرجحة بناءً على النسب المحددة
+        // إنشاء مصفوفة مرجحة دقيقة بناءً على النسب
         function createWeightedPrizesArray() {
             let weightedArray = [];
             
-            // إضافة كل جائزة حسب نسبتها
+            // إضافة الجوائز حسب أوزانها
             prizes.forEach(prize => {
-                for (let i = 0; i < prize.percentage; i++) {
+                for (let i = 0; i < prize.weight; i++) {
                     weightedArray.push(prize);
                 }
             });
             
-            // إذا كان المجموع أقل من 100، نملأ الباقي بـ "حظ أوفر"
-            while (weightedArray.length < 100) {
-                weightedArray.push(prizes[5]); // حظ أوفر
-            }
-            
+            // التأكد من أن المجموع يساوي 100
             return weightedArray;
         }
 
@@ -298,31 +232,46 @@
         const spinButton = document.getElementById('spinButton');
         const resultDiv = document.getElementById('result');
         const timerDiv = document.getElementById('timer');
-        const userIdInput = document.getElementById('userIdInput');
+        const userId = getUserIdFromUrl(); // الحصول على المعرف من الرابط
 
-        // إنشاء تسميات الجوائز على العجلة
+        // إنشاء تسميات الجوائز على العجلة بدقة
         function createPrizeLabels() {
-            wheel.innerHTML = ''; // مسح المحتوى القديم
+            wheel.innerHTML = '';
             
             const totalPrizes = prizes.length;
             const anglePerPrize = 360 / totalPrizes;
+            const labelRadius = 170; // نصف قطر لوضع النص
             
             prizes.forEach((prize, index) => {
                 const label = document.createElement('div');
                 label.className = 'prize-label';
-                label.style.setProperty('--rotation', `${index * anglePerPrize}deg`);
+                
+                // حساب الزاوية للقسم
+                const sectionAngle = index * anglePerPrize;
+                
+                // وضع النص في منتصف القسم
+                const labelAngle = sectionAngle + (anglePerPrize / 2);
+                
+                // تدوير النص 90 درجة لجعله عمودياً
+                const rotateAngle = labelAngle - 90;
+                
+                // حساب موضع النص بدقة
+                const x = Math.cos(labelAngle * Math.PI / 180) * labelRadius;
+                const y = Math.sin(labelAngle * Math.PI / 180) * labelRadius;
+                
+                label.style.transform = `translate(${x}px, ${y}px) rotate(${rotateAngle}deg)`;
                 label.textContent = prize.name;
-                label.style.color = index % 2 === 0 ? '#333' : '#fff';
+                label.style.color = index % 2 === 0 ? '#1e293b' : '#ffffff';
                 
                 wheel.appendChild(label);
             });
         }
 
-        // رابط Google Apps Script
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzFRgO4F9iWwIkG1u9EJCf_6yfGbAEiIcNH8ZPZLlV6cMVm6Q5qT2dz5w5N170uAITD/exec'; // ضع رابط سكربت Google Apps Script هنا
+        // رابط Google Apps Script (ضع الرابط الحقيقي هنا)
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWCDIgiQdMRIaxWG5j3XcwblLnANgIuabVOTTSfMcpeb8G1uT5_2uwRKl8R9ickAAL/exec';
 
         // التحقق من وقت التدوير الأخير
-        async function checkSpinTime(userId) {
+        async function checkSpinTime() {
             try {
                 const response = await fetch(`${SCRIPT_URL}?action=get_user&user_id=${userId}`);
                 const data = await response.json();
@@ -366,7 +315,7 @@
         }
 
         // حفظ نتيجة التدوير
-        async function saveSpinResult(userId, prize) {
+        async function saveSpinResult(prize) {
             try {
                 const response = await fetch(`${SCRIPT_URL}?action=save_spin&user_id=${userId}&prize=${encodeURIComponent(prize)}`);
                 const data = await response.json();
@@ -377,8 +326,8 @@
             }
         }
 
-        // إرسال رسالة للمستخدم عبر البوت
-        async function sendPrizeToUser(userId, prize) {
+        // إرسال الجائزة للمستخدم
+        async function sendPrizeToUser(prize) {
             try {
                 const response = await fetch(`${SCRIPT_URL}?action=send_to_bot&user_id=${userId}&prize=${encodeURIComponent(prize)}`);
                 const data = await response.json();
@@ -391,15 +340,8 @@
 
         // تدوير العجلة
         spinButton.addEventListener('click', async () => {
-            const userId = userIdInput.value.trim();
-            
-            if (!userId) {
-                resultDiv.textContent = '⚠️ الرجاء إدخال معرف Telegram الخاص بك';
-                return;
-            }
-            
             // التحقق مما إذا كان يمكن التدوير
-            const canSpin = await checkSpinTime(userId);
+            const canSpin = await checkSpinTime();
             if (!canSpin) return;
             
             spinButton.disabled = true;
@@ -419,10 +361,12 @@
             const totalPrizes = prizes.length;
             const anglePerPrize = 360 / totalPrizes;
             
-            // حساب الزاوية بحيث يتوقف السهم على مركز القسم
+            // حساب الزاوية بحيث يتوقف السهم على مركز القسم المحدد
             const baseRotation = 3600; // 10 دورات كاملة
             const targetPrizeAngle = prizeIndex * anglePerPrize;
-            const targetAngle = baseRotation - targetPrizeAngle + (anglePerPrize / 2) - 90;
+            
+            // الزاوية التي تجعل السهم يشير إلى مركز القسم المحدد
+            const targetAngle = baseRotation - targetPrizeAngle - (anglePerPrize / 2) + 90;
             
             // تدوير العجلة
             wheel.style.transition = 'transform 4s cubic-bezier(0.2, 0.8, 0.3, 1)';
@@ -434,14 +378,14 @@
                 resultDiv.innerHTML = `🎉 مبروك! لقد ربحت: <strong style="color:#ffd166">${selectedPrize.name}</strong>`;
                 
                 // حفظ النتيجة في Google Sheets
-                const saveResult = await saveSpinResult(userId, selectedPrize.name);
+                const saveResult = await saveSpinResult(selectedPrize.name);
                 
                 if (saveResult) {
-                    // إرسال الجائزة للمستخدم عبر البوت
-                    const sendResult = await sendPrizeToUser(userId, selectedPrize.name);
+                    // إرسال الجائزة للمستخدم
+                    const sendResult = await sendPrizeToUser(selectedPrize.name);
                     
                     if (sendResult.success) {
-                        resultDiv.innerHTML += `<br><small style="color:#a9b7c6">✓ تم إرسال الجائزة إلى حسابك على Telegram</small>`;
+                        resultDiv.innerHTML += `<br><small style="color:#a9b7c6">✓ تم إرسال الجائزة إلى حسابك</small>`;
                     } else {
                         resultDiv.innerHTML += `<br><small style="color:#ff6b6b">⚠️ ${sendResult.message}</small>`;
                     }
@@ -459,15 +403,8 @@
         document.addEventListener('DOMContentLoaded', () => {
             createPrizeLabels();
             
-            // تعيين معرف افتراضي للمستخدم (يمكن إزالته)
-            userIdInput.value = '';
-            
-            // التحقق من وقت التدوير للمستخدم عند تحميل الصفحة
-            userIdInput.addEventListener('input', async () => {
-                if (userIdInput.value.length > 5) {
-                    await checkSpinTime(userIdInput.value);
-                }
-            });
+            // التحقق من وقت التدوير للمستخدم
+            checkSpinTime();
         });
     </script>
 </body>
