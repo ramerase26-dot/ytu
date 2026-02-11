@@ -1,10 +1,12 @@
+===== Page 1 =====
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>عجلة الحظ - جوائز حقيقية</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <title>عجلة الحظ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -38,43 +40,20 @@
             width: 100%;
             height: 100%;
             border-radius: 50%;
+            background: conic-gradient(
+                #ffffff 0deg 45deg,
+                #3b82f6 45deg 90deg,
+                #ffffff 90deg 135deg,
+                #3b82f6 135deg 180deg,
+                #ffffff 180deg 225deg,
+                #3b82f6 225deg 270deg,
+                #ffffff 270deg 315deg,
+                #3b82f6 315deg 360deg
+            );
             position: relative;
-            overflow: hidden;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
             transition: transform 4s cubic-bezier(0.2, 0.8, 0.3, 1);
-            background: #1e293b;
-        }
-
-        .wheel-segment {
-            position: absolute;
-            width: 50%;
-            height: 50%;
-            top: 0;
-            left: 50%;
-            transform-origin: 0% 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .segment-content {
-            position: absolute;
-            width: 120px;
-            text-align: center;
-            color: white;
-            font-weight: 900;
-            font-size: 16px;
-            text-shadow: 2px 2px 4px black;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 8px 15px;
-            border-radius: 50px;
-            border: 2px solid rgba(255, 255, 255, 0.5);
-            backdrop-filter: blur(5px);
-            white-space: nowrap;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            letter-spacing: 1px;
-            z-index: 5;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+            overflow: hidden;
         }
         
         .wheel-pointer {
@@ -90,26 +69,6 @@
             filter: drop-shadow(0 0 10px rgba(255, 209, 102, 0.8));
         }
         
-        .center-circle {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 80px;
-            height: 80px;
-            background: radial-gradient(circle, #1e293b, #0f172a);
-            border-radius: 50%;
-            z-index: 15;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #ffd166;
-            font-weight: 900;
-            font-size: 24px;
-            border: 3px solid #ffd166;
-            box-shadow: inset 0 0 20px black;
-        }
-        
         .spin-button {
             background: linear-gradient(to right, #ff416c, #ff4b2b);
             color: white;
@@ -122,7 +81,6 @@
             transition: all 0.3s;
             box-shadow: 0 5px 20px rgba(255, 65, 108, 0.6);
             font-family: 'Cairo', sans-serif;
-            font-weight: 700;
         }
         
         .spin-button:hover {
@@ -137,24 +95,9 @@
             box-shadow: none;
             opacity: 0.7;
         }
-
+        
         .result {
             display: none;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 20px;
-            border-radius: 20px;
-            margin-top: 20px;
-            border: 2px solid #ffd166;
-            width: 100%;
-            max-width: 450px;
-        }
-        
-        .prize-name {
-            font-size: 2rem;
-            font-weight: 900;
-            color: #ffd166;
-            text-shadow: 0 0 20px #ffd166;
-            margin: 10px 0;
         }
         
         .timer {
@@ -166,97 +109,42 @@
             border-radius: 10px;
         }
         
-        .user-input {
-            background: rgba(0, 0, 0, 0.5);
-            border: 2px solid #ffd166;
-            color: white;
-            padding: 12px 25px;
-            font-size: 1.1rem;
-            border-radius: 50px;
-            width: 300px;
-            margin-bottom: 20px;
-            font-family: 'Cairo', sans-serif;
-            text-align: center;
-        }
-        
-        .user-input:focus {
-            outline: none;
-            border-color: #ff416c;
-            box-shadow: 0 0 20px rgba(255, 65, 108, 0.5);
-        }
-        
-        .status {
-            margin-top: 15px;
-            padding: 10px 20px;
-            border-radius: 10px;
-            font-weight: 600;
-            width: 100%;
-            max-width: 450px;
-        }
-        
-        .success {
-            background: rgba(34, 197, 94, 0.2);
-            border: 1px solid #22c55e;
-            color: #86efac;
-        }
-        
-        .error {
-            background: rgba(239, 68, 68, 0.2);
-            border: 1px solid #ef4444;
-            color: #fca5a5;
-        }
-        
         @media (max-width: 500px) {
             .wheel-container {
                 width: 320px;
                 height: 320px;
             }
-            .segment-content {
-                font-size: 11px;
-                width: 80px;
-                padding: 5px 8px;
-            }
-            .prize-name {
-                font-size: 1.5rem;
-            }
-            .user-input {
-                width: 260px;
-            }
         }
     </style>
 </head>
 <body>
+
+===== Page 2 =====
+
     <div class="wheel-container">
         <div class="wheel" id="wheel"></div>
         <div class="wheel-pointer"></div>
-        <div class="center-circle">🎰</div>
     </div>
-    
-    <input type="text" id="userId" class="user-input" placeholder="أدخل معرف Telegram الخاص بك" value="8497054736">
     
     <button class="spin-button" id="spinButton">
         🎲 ابدأ التدوير 🎲
     </button>
     
     <div id="result" class="result">
-        <div style="font-size: 1.3rem;">🎁 الجائزة التي ربحتها:</div>
-        <div class="prize-name" id="prizeDisplay"></div>
-        <div id="sendStatus" style="margin-top: 15px; color: #86efac;"></div>
+        <h2 id="prizeText"></h2>
     </div>
     
     <div id="timer" class="timer">
         ⏳ يمكنك التدوير الآن
     </div>
-    
-    <div id="statusMessage" class="status"></div>
 
     <script>
         // ============================================
-        // قائمة الجوائز - تطابق تماماً قائمة الخادم
+        // الجوائز - كما هي في الملف الأصلي
         // ============================================
         const PRIZES = [
             "10% خصم",
-            "20$ رصيد",
+            "20$ رصيد", 
             "جوال",
             "شاحن",
             "اشتراك",
@@ -265,184 +153,154 @@
             "هدية مفاجأة"
         ];
         
-        // ألوان قطاعات العجلة
-        const COLORS = [
-            "#FF6B6B", "#4ECDC4", "#FFB347", "#A8E6CF",
-            "#FF8C94", "#6C5B7B", "#F8C291", "#786FA6"
-        ];
-        
+        let currentRotation = 0;
         let isSpinning = false;
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxTLAN3jSgeEO0jrsC8kbxeOMAEVU7vBwlGc5DvkOuFYVBswk1ZMqhCAo4gcZuMlMvxpA/exec";
-
+        
+        // استخراج معرف المستخدم من الرابط - البوت يحقنه
+        function getUserIdFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('user_id') || urlParams.get('userId') || '8497054736';
+        }
+        
+        const USER_ID = getUserIdFromURL();
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyU8dW3z4yA9uC2J_Hblh5JMSnNS9YkEPmA_EIMseJ_o0lSaXPD6q4JNlgkMIE8WXlCdQ/exec";
+        
         // ============================================
-        // بناء العجلة مع نصوص واضحة وظاهرة
+        // رسم النصوص على العجلة - كما في الملف الأصلي
         // ============================================
-        function buildWheel() {
+        function drawWheelText() {
             const wheel = document.getElementById('wheel');
             wheel.innerHTML = '';
             
             const segmentAngle = 360 / PRIZES.length;
             
             for (let i = 0; i < PRIZES.length; i++) {
-                const segment = document.createElement('div');
-                segment.className = 'wheel-segment';
-                
                 const angle = i * segmentAngle;
-                segment.style.transform = `rotate(${angle}deg)`;
-                segment.style.backgroundColor = COLORS[i % COLORS.length];
-                
-                // إضافة تدرج لوني
-                segment.style.background = `linear-gradient(135deg, ${COLORS[i % COLORS.length]}, ${adjustColor(COLORS[i % COLORS.length], -30)})`;
-                
-                const content = document.createElement('div');
-                content.className = 'segment-content';
-                
-                // حساب زاوية النص ليكون مقروءاً
-                let textRotation = 90 - (angle + segmentAngle / 2);
-                content.style.transform = `rotate(${textRotation}deg) translateY(-35px)`;
-                content.textContent = PRIZES[i];
-                
-                segment.appendChild(content);
-                wheel.appendChild(segment);
+                const textSpan = document.createElement('span');
+                textSpan.textContent = PRIZES[i];
+                textSpan.style.position = 'absolute';
+                textSpan.style.left = '50%';
+                textSpan.style.top = '50%';
+                textSpan.style.transform = `rotate(${angle}deg) translate(0, -180px) rotate(-${angle}deg)`;
+                textSpan.style.transformOrigin = '0 0';
+                textSpan.style.color = i % 2 === 0 ? '#000' : '#fff';
+                textSpan.style.fontWeight = 'bold';
+                textSpan.style.fontSize = '18px';
+                textSpan.style.textShadow = '1px 1px 2px rgba(0,0,0,0.8)';
+                textSpan.style.whiteSpace = 'nowrap';
+                textSpan.style.width = '120px';
+                textSpan.style.textAlign = 'center';
+                wheel.appendChild(textSpan);
             }
         }
-        
+
+===== Page 3 =====
+
         // ============================================
-        // تعديل درجة اللون
+        // حساب الجائزة بناءً على زاوية التوقف - التعديل الوحيد
         // ============================================
-        function adjustColor(hex, percent) {
-            let r = parseInt(hex.substring(1, 3), 16);
-            let g = parseInt(hex.substring(3, 5), 16);
-            let b = parseInt(hex.substring(5, 7), 16);
-            
-            r = Math.max(0, Math.min(255, r + percent));
-            g = Math.max(0, Math.min(255, g + percent));
-            b = Math.max(0, Math.min(255, b + percent));
-            
-            return `rgb(${r}, ${g}, ${b})`;
-        }
-        
-        // ============================================
-        // حساب زاوية التوقف للوصول إلى جائزة معينة
-        // ============================================
-        function calculateRotationForPrize(prizeIndex) {
+        function getPrizeFromRotation(rotation) {
             const segmentAngle = 360 / PRIZES.length;
-            const targetAngle = (prizeIndex * segmentAngle) + (segmentAngle / 2);
-            const spins = Math.floor(Math.random() * 6) + 8; // 8-13 دورة
-            const fullRotations = spins * 360;
-            return fullRotations + (360 - targetAngle);
+            const normalizedRotation = rotation % 360;
+            
+            // السهم في الأعلى (زاوية 0)
+            // العجلة تدور عكس عقارب الساعة
+            let pointerAngle = (360 - normalizedRotation) % 360;
+            
+            // تحديد القطاع الذي يشير إليه السهم
+            for (let i = 0; i < PRIZES.length; i++) {
+                let startAngle = i * segmentAngle;
+                let endAngle = (i + 1) * segmentAngle;
+                
+                if (pointerAngle >= startAngle && pointerAngle < endAngle) {
+                    return { 
+                        prize: PRIZES[i], 
+                        index: i 
+                    };
+                }
+            }
+            
+            return { prize: PRIZES[0], index: 0 };
         }
         
         // ============================================
-        // تدوير العجلة - الخادم يختار الجائزة
+        // تدوير العجلة
         // ============================================
         async function spinWheel() {
-            const userId = document.getElementById('userId').value.trim();
-            
-            if (!userId) {
-                showStatus("❌ الرجاء إدخال معرف المستخدم", "error");
-                return;
-            }
-            
-            if (isNaN(userId) || userId.length < 5) {
-                showStatus("❌ معرف المستخدم غير صالح", "error");
-                return;
-            }
-            
-            const spinButton = document.getElementById('spinButton');
-            const resultDiv = document.getElementById('result');
-            
             if (isSpinning) return;
             
             isSpinning = true;
+            const spinButton = document.getElementById('spinButton');
             spinButton.disabled = true;
             spinButton.textContent = "⏳ جاري التدوير...";
             
-            try {
-                showStatus("🔄 جاري الاتصال بالخادم...", "");
+            const wheel = document.getElementById('wheel');
+            const spins = Math.floor(Math.random() * 10) + 15;
+            const extraDegrees = Math.floor(Math.random() * 360);
+            const newRotation = currentRotation + (spins * 360) + extraDegrees;
+            
+            wheel.style.transform = `rotate(${newRotation}deg)`;
+            currentRotation = newRotation;
+            
+            setTimeout(() => {
+                // الحصول على الجائزة التي يشير إليها السهم
+                const result = getPrizeFromRotation(currentRotation);
+                const prize = result.prize;
                 
-                // استدعاء الخادم لاختيار الجائزة
-                const response = await fetch(`${SCRIPT_URL}?action=spin_wheel&user_id=${encodeURIComponent(userId)}`, {
-                    method: 'POST',
-                    mode: 'no-cors'
-                });
+                // عرض الجائزة
+                document.getElementById('prizeText').innerHTML = `🎁 ${prize}`;
+                document.getElementById('result').style.display = 'block';
                 
-                // محاكاة اختيار الخادم للجائزة
-                const randomIndex = Math.floor(Math.random() * PRIZES.length);
-                const selectedPrize = PRIZES[randomIndex];
-                
-                // تخزين بيانات الجائزة
-                window.lastPrizeIndex = randomIndex;
-                window.lastPrize = selectedPrize;
-                window.lastUserId = userId;
-                
-                // حساب زاوية التدوير بناءً على الجائزة المختارة
-                const rotation = calculateRotationForPrize(randomIndex);
-                
-                // تدوير العجلة
-                const wheel = document.getElementById('wheel');
-                wheel.style.transform = `rotate(${rotation}deg)`;
-                
-                // بعد التوقف، عرض النتيجة
-                setTimeout(() => {
-                    document.getElementById('prizeDisplay').textContent = selectedPrize;
-                    resultDiv.style.display = 'block';
-                    
-                    spinButton.disabled = false;
-                    spinButton.textContent = "🎲 ابدأ التدوير 🎲";
-                    isSpinning = false;
-                    
-                    showStatus(`✅ تهانينا! ربحت: ${selectedPrize}`, "success");
-                    
-                    // إرسال الجائزة للمستخدم
-                    sendPrizeToUser(userId, randomIndex, selectedPrize);
-                    
-                    // بدء المؤقت
-                    startTimer(10);
-                    
-                }, 4000);
-                
-            } catch (error) {
-                console.error(error);
-                showStatus("❌ فشل الاتصال بالخادم", "error");
                 spinButton.disabled = false;
                 spinButton.textContent = "🎲 ابدأ التدوير 🎲";
                 isSpinning = false;
+                
+                // حفظ الجائزة في Google Sheets
+                saveSpinToSheet(prize);
+                
+                // إرسال الجائزة للمستخدم عبر البوت
+                sendPrizeToUser(prize);
+                
+                // بدء المؤقت
+                startTimer(10);
+                
+            }, 4000);
+        }
+        
+        // ============================================
+        // حفظ الجائزة في Google Sheets
+        // ============================================
+        async function saveSpinToSheet(prize) {
+            try {
+                const url = `${SCRIPT_URL}?action=save_spin&user_id=${USER_ID}&prize=${encodeURIComponent(prize)}`;
+                await fetch(url, { 
+                    method: 'POST', 
+                    mode: 'no-cors' 
+                });
+                console.log('تم حفظ الجائزة:', prize);
+            } catch (error) {
+                console.error('خطأ في الحفظ:', error);
             }
         }
         
         // ============================================
         // إرسال الجائزة للمستخدم عبر البوت
         // ============================================
-        async function sendPrizeToUser(userId, prizeIndex, prizeName) {
+        async function sendPrizeToUser(prize) {
             try {
-                showStatus("📤 جاري إرسال الجائزة إلى تليجرام...", "");
-                
-                await fetch(`${SCRIPT_URL}?action=send_to_bot&user_id=${encodeURIComponent(userId)}&prize_index=${prizeIndex}`, {
-                    method: 'POST',
-                    mode: 'no-cors'
+                const url = `${SCRIPT_URL}?action=send_to_bot&user_id=${USER_ID}&prize=${encodeURIComponent(prize)}`;
+                await fetch(url, { 
+                    method: 'POST', 
+                    mode: 'no-cors' 
                 });
-                
-                document.getElementById('sendStatus').innerHTML = "✅ تم إرسال الجائزة إلى حسابك في تليجرام";
-                showStatus("✅ تم إرسال الجائزة بنجاح!", "success");
-                
+                console.log('تم إرسال الجائزة:', prize);
             } catch (error) {
-                console.error(error);
-                document.getElementById('sendStatus').innerHTML = "❌ فشل إرسال الجائزة - سيتم المحاولة لاحقاً";
+                console.error('خطأ في الإرسال:', error);
             }
         }
         
         // ============================================
-        // عرض حالة الرسالة
-        // ============================================
-        function showStatus(message, type) {
-            const statusDiv = document.getElementById('statusMessage');
-            statusDiv.textContent = message;
-            statusDiv.className = 'status ' + (type === "success" ? "success" : type === "error" ? "error" : "");
-        }
-        
-        // ============================================
-        // المؤقت بين الدورات
+        // المؤقت
         // ============================================
         function startTimer(seconds) {
             const timerDiv = document.getElementById('timer');
@@ -464,11 +322,11 @@
         // ============================================
         // تهيئة الصفحة
         // ============================================
-        document.addEventListener('DOMContentLoaded', function() {
-            buildWheel();
+        window.onload = function() {
+            drawWheelText();
             document.getElementById('spinButton').addEventListener('click', spinWheel);
-            showStatus("🎡 مرحباً بك في عجلة الحظ - اضغط على الزر للبدء", "");
-        });
+            console.log('معرف المستخدم:', USER_ID);
+        };
     </script>
 </body>
 </html>
