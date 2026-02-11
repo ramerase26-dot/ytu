@@ -1,5 +1,3 @@
-===== Page 1 =====
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -13,7 +11,7 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Cairo', sans-serif;
             background: url('https://i.postimg.cc/wB7MWQsq/IMG-20260129-003341-890.jpg') no-repeat center center fixed;
@@ -28,14 +26,14 @@
             align-items: center;
             justify-content: center;
         }
-        
+
         .wheel-container {
             position: relative;
             width: 450px;
             height: 450px;
             margin: 0 auto 40px;
         }
-        
+
         .wheel {
             width: 100%;
             height: 100%;
@@ -55,7 +53,7 @@
             box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
             overflow: hidden;
         }
-        
+
         .wheel-pointer {
             position: absolute;
             top: -25px;
@@ -68,7 +66,28 @@
             z-index: 10;
             filter: drop-shadow(0 0 10px rgba(255, 209, 102, 0.8));
         }
-        
+
+        .prize-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            font-weight: bold;
+            font-size: 18px;
+            text-align: center;
+            width: 150px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            transform-origin: 0 0;
+            white-space: nowrap;
+            overflow: visible;
+            text-overflow: clip;
+            color: #000; /* لجعل النص مرئيا على الخلفية */
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.8); /* تحسين القراءة */
+        }
+
         .spin-button {
             background: linear-gradient(to right, #ff416c, #ff4b2b);
             color: white;
@@ -82,12 +101,12 @@
             box-shadow: 0 5px 20px rgba(255, 65, 108, 0.6);
             font-family: 'Cairo', sans-serif;
         }
-        
+
         .spin-button:hover {
             transform: translateY(-3px);
             box-shadow: 0 8px 25px rgba(255, 65, 108, 0.8);
         }
-        
+
         .spin-button:disabled {
             background: #555;
             cursor: not-allowed;
@@ -95,11 +114,11 @@
             box-shadow: none;
             opacity: 0.7;
         }
-        
+
         .result {
-            display: none;
+            display: block !important;
         }
-        
+
         .timer {
             font-size: 1.2rem;
             color: #ffd166;
@@ -108,225 +127,243 @@
             background: rgba(255, 255, 255, 0.1);
             border-radius: 10px;
         }
-        
+
         @media (max-width: 500px) {
             .wheel-container {
                 width: 320px;
                 height: 320px;
             }
+            .prize-label {
+                font-size: 14px;
+                width: 110px;
+            }
         }
     </style>
 </head>
 <body>
-
-===== Page 2 =====
-
     <div class="wheel-container">
-        <div class="wheel" id="wheel"></div>
         <div class="wheel-pointer"></div>
+        <div class="wheel" id="wheel">
+            <!-- الجوائز ستضاف بواسطة JavaScript -->
+        </div>
     </div>
-    
-    <button class="spin-button" id="spinButton">
-        🎲 ابدأ التدوير 🎲
-    </button>
-    
-    <div id="result" class="result">
-        <h2 id="prizeText"></h2>
-    </div>
-    
-    <div id="timer" class="timer">
-        ⏳ يمكنك التدوير الآن
-    </div>
+    <button class="spin-button" id="spinButton">تدوير العجلة</button>
+    <div class="timer" id="timer"></div>
+    <div class="result" id="result">اضغط على زر التدوير</div>
 
     <script>
-        // ============================================
-        // الجوائز - كما هي في الملف الأصلي
-        // ============================================
-        const PRIZES = [
-            "10% خصم",
-            "20$ رصيد", 
-            "جوال",
-            "شاحن",
-            "اشتراك",
-            "سماعات",
-            "كوبون 50$",
-            "هدية مفاجأة"
-        ];
-        
-        let currentRotation = 0;
-        let isSpinning = false;
-        
-        // استخراج معرف المستخدم من الرابط - البوت يحقنه
-        function getUserIdFromURL() {
+        // 1. الحصول على user_id من الرابط
+        function getUserIdFromUrl() {
             const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get('user_id') || urlParams.get('userId') || '8497054736';
-        }
-        
-        const USER_ID = getUserIdFromURL();
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyU8dW3z4yA9uC2J_Hblh5JMSnNS9YkEPmA_EIMseJ_o0lSaXPD6q4JNlgkMIE8WXlCdQ/exec";
-        
-        // ============================================
-        // رسم النصوص على العجلة - كما في الملف الأصلي
-        // ============================================
-        function drawWheelText() {
-            const wheel = document.getElementById('wheel');
-            wheel.innerHTML = '';
-            
-            const segmentAngle = 360 / PRIZES.length;
-            
-            for (let i = 0; i < PRIZES.length; i++) {
-                const angle = i * segmentAngle;
-                const textSpan = document.createElement('span');
-                textSpan.textContent = PRIZES[i];
-                textSpan.style.position = 'absolute';
-                textSpan.style.left = '50%';
-                textSpan.style.top = '50%';
-                textSpan.style.transform = `rotate(${angle}deg) translate(0, -180px) rotate(-${angle}deg)`;
-                textSpan.style.transformOrigin = '0 0';
-                textSpan.style.color = i % 2 === 0 ? '#000' : '#fff';
-                textSpan.style.fontWeight = 'bold';
-                textSpan.style.fontSize = '18px';
-                textSpan.style.textShadow = '1px 1px 2px rgba(0,0,0,0.8)';
-                textSpan.style.whiteSpace = 'nowrap';
-                textSpan.style.width = '120px';
-                textSpan.style.textAlign = 'center';
-                wheel.appendChild(textSpan);
+            let userId = urlParams.get('user_id') || urlParams.get('id') || urlParams.get('userId');
+            if (!userId || userId.trim() === "") {
+                userId = 'guest_' + Math.floor(Math.random() * 10000);
+                const newUrl = window.location.origin + window.location.pathname + '?user_id=' + userId;
+                window.history.replaceState({}, '', newUrl);
             }
+            return userId;
         }
 
-===== Page 3 =====
+        // 2. تعريف الجوائز ونسبها المطلوبة
+        const prizes = [
+            { name: "5,000", weight: 2 },   // 2%
+            { name: "10,000", weight: 0 },  // 0%
+            { name: "خصم 5%", weight: 3 },    // 3%
+            { name: "100,000", weight: 0 }, // 0%
+            { name: "خصم 10%", weight: 0 },  // 0%
+            { name: "500,000", weight: 0 }, // 0%
+            { name: "1,000,000", weight: 0 },// 0%
+            { name: "حظ أوفر", weight: 95 } // 95%
+        ];
 
-        // ============================================
-        // حساب الجائزة بناءً على زاوية التوقف - التعديل الوحيد
-        // ============================================
-        function getPrizeFromRotation(rotation) {
-            const segmentAngle = 360 / PRIZES.length;
-            const normalizedRotation = rotation % 360;
-            
-            // السهم في الأعلى (زاوية 0)
-            // العجلة تدور عكس عقارب الساعة
-            let pointerAngle = (360 - normalizedRotation) % 360;
-            
-            // تحديد القطاع الذي يشير إليه السهم
-            for (let i = 0; i < PRIZES.length; i++) {
-                let startAngle = i * segmentAngle;
-                let endAngle = (i + 1) * segmentAngle;
-                
-                if (pointerAngle >= startAngle && pointerAngle < endAngle) {
-                    return { 
-                        prize: PRIZES[i], 
-                        index: i 
-                    };
+        // 3. إنشاء مصفوفة مرجحة حسب النسب
+        function createWeightedPrizes() {
+            let weightedArray = [];
+            prizes.forEach(prize => {
+                for (let i = 0; i < prize.weight; i++) {
+                    weightedArray.push(prize);
                 }
-            }
-            
-            return { prize: PRIZES[0], index: 0 };
+            });
+            return weightedArray;
         }
-        
-        // ============================================
-        // تدوير العجلة
-        // ============================================
-        async function spinWheel() {
-            if (isSpinning) return;
-            
-            isSpinning = true;
-            const spinButton = document.getElementById('spinButton');
-            spinButton.disabled = true;
-            spinButton.textContent = "⏳ جاري التدوير...";
-            
-            const wheel = document.getElementById('wheel');
-            const spins = Math.floor(Math.random() * 10) + 15;
-            const extraDegrees = Math.floor(Math.random() * 360);
-            const newRotation = currentRotation + (spins * 360) + extraDegrees;
-            
-            wheel.style.transform = `rotate(${newRotation}deg)`;
-            currentRotation = newRotation;
-            
-            setTimeout(() => {
-                // الحصول على الجائزة التي يشير إليها السهم
-                const result = getPrizeFromRotation(currentRotation);
-                const prize = result.prize;
-                
-                // عرض الجائزة
-                document.getElementById('prizeText').innerHTML = `🎁 ${prize}`;
-                document.getElementById('result').style.display = 'block';
-                
-                spinButton.disabled = false;
-                spinButton.textContent = "🎲 ابدأ التدوير 🎲";
-                isSpinning = false;
-                
-                // حفظ الجائزة في Google Sheets
-                saveSpinToSheet(prize);
-                
-                // إرسال الجائزة للمستخدم عبر البوت
-                sendPrizeToUser(prize);
-                
-                // بدء المؤقت
-                startTimer(10);
-                
-            }, 4000);
+
+        // 4. تهيئة العناصر
+        const wheel = document.getElementById('wheel');
+        const spinButton = document.getElementById('spinButton');
+        const resultDiv = document.getElementById('result');
+        const timerDiv = document.getElementById('timer');
+        const userId = getUserIdFromUrl();
+
+        // 5. إضافة الجوائز إلى العجلة
+        function createPrizeLabels() {
+            wheel.innerHTML = "";
+            const totalPrizes = prizes.length;
+            const anglePerPrize = 360 / totalPrizes;
+            // تقليل نصف القطر لوضع النص أقرب إلى المركز
+            const radius = 130;
+
+            prizes.forEach((prize, index) => {
+                const label = document.createElement('div');
+                label.className = 'prize-label';
+
+                // حساب الزاوية لوضع النص في منتصف الشريحة
+                const angle = (index * anglePerPrize) + (anglePerPrize / 2);
+                const radian = (angle - 90) * (Math.PI / 180); // -90 لضبط نقطة البداية
+
+                // وضع النص في مكانه الصحيح
+                label.style.transform = `translate(${Math.cos(radian) * radius}px, ${Math.sin(radian) * radius}px) rotate(${angle}deg)`;
+
+                label.textContent = prize.name;
+                label.style.color = index % 2 === 0 ? '#1e293b' : '#ffffff';
+                label.style.fontWeight = 'bold';
+                label.style.textShadow = '1px 1px 2px rgba(0,0,0,0.3)';
+                wheel.appendChild(label);
+            });
         }
-        
-        // ============================================
-        // حفظ الجائزة في Google Sheets
-        // ============================================
-        async function saveSpinToSheet(prize) {
+
+        // 6. رابط Google Apps Script (ضع الرابط الحقيقي هنا)
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz6ZyNN9K0wC5nGDOz_-c5HbmOShJwfyioDIyUStbJ6LAxJOfCjpOVALRZgWuCNLot5/exec';
+
+        // 7. التحقق من وقت التدوير الأخير
+        async function checkSpinTime() {
             try {
-                const url = `${SCRIPT_URL}?action=save_spin&user_id=${USER_ID}&prize=${encodeURIComponent(prize)}`;
-                await fetch(url, { 
-                    method: 'POST', 
-                    mode: 'no-cors' 
-                });
-                console.log('تم حفظ الجائزة:', prize);
+                const response = await fetch(`${SCRIPT_URL}?action=get_user&user_id=${userId}`);
+                if (!response.ok) throw new Error('Network error');
+                const data = await response.json();
+
+                if (data.success) {
+                    if (data.next_spin_allowed) {
+                        spinButton.disabled = false;
+                        timerDiv.textContent = '✅ يمكنك التدوير الآن!';
+                        return true;
+                    } else {
+                        spinButton.disabled = true;
+                        const lastSpinTime = new Date(data.last_spin).getTime();
+                        const nextSpinTime = lastSpinTime + (24 * 60 * 60 * 1000);
+                        const timeLeft = nextSpinTime - Date.now();
+
+                        if (timeLeft > 0) {
+                            updateTimer(timeLeft);
+                            return false;
+                        } else {
+                            spinButton.disabled = false;
+                            timerDiv.textContent = '✅ يمكنك التدوير الآن!';
+                            return true;
+                        }
+                    }
+                }
             } catch (error) {
-                console.error('خطأ في الحفظ:', error);
+                console.error('Error:', error);
+                // إذا فشل، نسمح بالتدوير
+                spinButton.disabled = false;
+                timerDiv.textContent = '✅ يمكنك التدوير الآن!';
+                return true;
             }
         }
-        
-        // ============================================
-        // إرسال الجائزة للمستخدم عبر البوت
-        // ============================================
+
+        // 8. تحديث المؤقت
+        function updateTimer(timeLeft) {
+            const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+            timerDiv.textContent = `⏳ يمكنك التدوير مرة أخرى بعد: ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+            if (timeLeft > 1000) {
+                setTimeout(() => updateTimer(timeLeft - 1000), 1000);
+            } else {
+                spinButton.disabled = false;
+                timerDiv.textContent = '✅ يمكنك التدوير الآن!';
+            }
+        }
+
+        // 9. حفظ التدوير في Google Sheets
+        async function saveSpinResult(prize) {
+            try {
+                await fetch(`${SCRIPT_URL}?action=save_spin&user_id=${userId}&prize=${encodeURIComponent(prize.name)}`, {
+                    method: 'POST',
+                    mode: 'no-cors'
+                });
+                return true;
+            } catch (error) {
+                console.error('Error saving:', error);
+                return true; // نستمر حتى لو فشل الحفظ
+            }
+        }
+
+        // 10. إرسال الجائزة للمستخدم
         async function sendPrizeToUser(prize) {
             try {
-                const url = `${SCRIPT_URL}?action=send_to_bot&user_id=${USER_ID}&prize=${encodeURIComponent(prize)}`;
-                await fetch(url, { 
-                    method: 'POST', 
-                    mode: 'no-cors' 
+                await fetch(`${SCRIPT_URL}?action=send_to_bot&user_id=${userId}&prize=${encodeURIComponent(prize.name)}`, {
+                    method: 'POST',
+                    mode: 'no-cors'
                 });
-                console.log('تم إرسال الجائزة:', prize);
+                return { success: true };
             } catch (error) {
-                console.error('خطأ في الإرسال:', error);
+                console.error('Error sending:', error);
+                return { success: false, message: 'سيتم إرسال الجائزة قريباً' };
             }
         }
-        
-        // ============================================
-        // المؤقت
-        // ============================================
-        function startTimer(seconds) {
-            const timerDiv = document.getElementById('timer');
-            let timeLeft = seconds;
-            
-            timerDiv.textContent = `⏳ انتظر ${timeLeft} ثانية للتدوير مرة أخرى`;
-            
-            const interval = setInterval(() => {
-                timeLeft--;
-                timerDiv.textContent = `⏳ انتظر ${timeLeft} ثانية للتدوير مرة أخرى`;
-                
-                if (timeLeft <= 0) {
-                    clearInterval(interval);
-                    timerDiv.textContent = "✅ يمكنك التدوير الآن";
+
+        // 11. تدوير العجلة
+        spinButton.addEventListener('click', async () => {
+            // التحقق من وقت التدوير
+            const canSpin = await checkSpinTime();
+            if (!canSpin) {
+                resultDiv.textContent = 'لم يحن وقت التدوير بعد!';
+                return;
+            }
+
+            // تعطيل الزر
+            spinButton.disabled = true;
+            resultDiv.textContent = '...جاري التدوير';
+
+            // إنشاء مصفوفة الجوائز المرجحة
+            const weightedPrizes = createWeightedPrizes();
+            // اختيار جائزة عشوائية حسب النسب
+            const randomIndex = Math.floor(Math.random() * weightedPrizes.length);
+            const selectedPrize = weightedPrizes[randomIndex];
+
+            // إيجاد مؤشر الجائزة الأصلية
+            const prizeIndex = prizes.findIndex(p => p.name === selectedPrize.name);
+
+            // حساب الزاوية الدقيقة للتوقف على الجائزة
+            const totalPrizes = prizes.length;
+            const anglePerPrize = 360 / totalPrizes;
+            const baseRotation = 360 * 5; // 5 دورات كاملة
+            // ضبط الزاوية بحيث يتوقف المؤشر في منتصف الشريحة
+            const targetAngle = baseRotation + (360 - (prizeIndex * anglePerPrize)) - (anglePerPrize / 2);
+
+            // تطبيق التدوير
+            wheel.style.transition = 'transform 4s cubic-bezier(0.2, 0.8, 0.3, 1)';
+            wheel.style.transform = `rotate(${targetAngle}deg)`;
+
+            // انتظار انتهاء التدوير
+            setTimeout(async () => {
+                // عرض النتيجة
+                resultDiv.innerHTML = `🎉 مبروك! لقد ربحت: <br><strong><span style="color:#ffd166;font-size:1.6rem">${selectedPrize.name}</span></strong>`;
+
+                // حفظ النتيجة
+                await saveSpinResult(selectedPrize);
+                // إرسال الجائزة للمستخدم
+                const sendResult = await sendPrizeToUser(selectedPrize);
+                if (sendResult.success) {
+                    resultDiv.innerHTML += '<br><small style="color:#a9b7c6">✅ تم إرسال الجائزة</small>';
                 }
-            }, 1000);
-        }
-        
-        // ============================================
-        // تهيئة الصفحة
-        // ============================================
-        window.onload = function() {
-            drawWheelText();
-            document.getElementById('spinButton').addEventListener('click', spinWheel);
-            console.log('معرف المستخدم:', USER_ID);
-        };
+
+                // تعطيل الزر لمدة 24 ساعة
+                spinButton.disabled = true;
+                const twentyFourHours = 24 * 60 * 60 * 1000;
+                updateTimer(twentyFourHours);
+
+            }, 4000);
+        });
+
+        // 12. تهيئة الصفحة
+        document.addEventListener('DOMContentLoaded', () => {
+            createPrizeLabels();
+            checkSpinTime();
+        });
     </script>
 </body>
 </html>
