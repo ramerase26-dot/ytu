@@ -179,7 +179,7 @@
         // ============================================
         // ⚙️ الإعدادات - غيرها حسب بياناتك
         // ============================================
-        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwrrLCfW30ajTPO-XA1j327GnpHxM0GvE-h6LygNyJm1QKgxPej8Bvo2gH2vk-Fmq0E/exec"; // ⚠️ ضع رابط Apps Script المنشور
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxA1X8H8kL9GR7N1XjzzDlWeAonLEeakJVT8fm3Qq117Kzm-XOe3nk0EvKAeTsA9HJ3/exec"; // ⚠️ ضع رابط Apps Script المنشور
         const WHEEL_BG_IMAGE = "https://i.postimg.cc/wB7MWQsq/IMG-20260129-003341-890.jpg";
 
         // جوائز العجلة (بنفس الترتيب في الكود)
@@ -367,7 +367,16 @@
                 isSpinning = false;
                 currentAngle = targetAngle;
                 drawWheel(currentAngle);
+                const actualPrize = getPrizeUnderPointer();
+                console.log(`🎯 الجائزة المستهدفة: ${prizeResult.name}, الجائزة تحت السهم: ${actualPrize}`);
+                if (actualPrize !== prizeResult.name) {
+                    console.warn("⚠️ عدم تطابق! سيتم ضبط العجلة يدوياً.");
                 
+                    const prizeIndex = PRIZES.findIndex(p => p.name === prizeResult.name);
+                    const sliceAngle = (2 * Math.PI) / PRIZES.length;
+                    currentAngle = (prizeIndex * sliceAngle) + (sliceAngle / 2) - Math.PI / 2;
+                    drawWheel(currentAngle);
+                }
                 // عرض النتيجة
                 showResult();
                 return;
@@ -375,7 +384,17 @@
             
             spinAnimation = requestAnimationFrame(animateSpin);
         }
-
+        function getPrizeUnderPointer() {
+    // زاوية السهم ثابتة = -PI/2 (أعلى)
+            const pointerAngle = -Math.PI / 2;
+    // تعديل الزاوية لتناسب دوران العجلة
+            let effectiveAngle = (pointerAngle - currentAngle + 2 * Math.PI) % (2 * Math.PI);
+            const sliceAngle = (2 * Math.PI) / PRIZES.length;
+            let index = Math.floor(effectiveAngle / sliceAngle);
+    // في حال كانت الزاوية تساوي 2PI بالضبط
+            if (index >= PRIZES.length) index = 0;
+            return PRIZES[index].name;
+        }
         function showResult() {
             const resultBox = document.getElementById('resultBox');
             let prizeText = '';
