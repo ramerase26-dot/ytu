@@ -2,7 +2,8 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>🎡 عجلة الحظ - EZIO</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎡 عجلة الحظ - EZIO (نسخة مضمونة)</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
     * { margin:0; padding:0; box-sizing:border-box; font-family:'Cairo',sans-serif; }
@@ -46,7 +47,7 @@
     const WHEEL_BG_IMAGE = "https://i.postimg.cc/wB7MWQsq/IMG-20260129-003341-890.jpg";
 
     // --------------------------------------------
-    // مصفوفة PRIZES موحدة بالكامل (7 جوائز فقط)
+    // الجوائز - 7 فقط (بدون تكرار)
     // --------------------------------------------
     const PRIZES = [
       { name: "5000",     value: 5000,    type: "fixed",   color: "#4B0082" },
@@ -59,6 +60,20 @@
     ];
 
     // --------------------------------------------
+    // الزوايا الثابتة لكل جائزة (بالتقدير الدائري)
+    // يتم حسابها بحيث يكون السهم في منتصف القطاع
+    // --------------------------------------------
+    const PRIZE_ANGLES = [
+      -1.34639685, // 5000
+      -0.44879895, // 10000
+       0.44879895, // 5%
+       1.34639685, // 100000
+       2.24399475, // 10%
+       3.14159265, // 500000
+       4.03919055  // 1000000
+    ];
+
+    // --------------------------------------------
     // متغيرات العجلة
     // --------------------------------------------
     const canvas = document.getElementById('wheelCanvas');
@@ -67,39 +82,20 @@
     let spinVelocity = 0;
     let targetAngle = 0;
     let isSpinning = false;
-    let prizeResult = null; // سيأتي من السيرفر (كائن كامل)
+    let prizeResult = null; // كائن الجائزة من السيرفر
     let userId = null;
 
     // --------------------------------------------
-    // دالة ذكية للبحث عن الجائزة في PRIZES
+    // دالة: الحصول على الزاوية الثابتة من اسم الجائزة
     // --------------------------------------------
-    function findPrizeIndex(prizeData) {
-      if (!prizeData) return -1;
-      // 1. البحث بالاسم (مع trim)
-      let index = PRIZES.findIndex(p => p.name.trim() === prizeData.name?.trim());
-      if (index !== -1) return index;
-      // 2. البحث بالقيمة والنوع
-      index = PRIZES.findIndex(p => p.value === prizeData.value && p.type === prizeData.type);
-      if (index !== -1) return index;
-      // 3. البحث بالاسم فقط (بدون trim)
-      index = PRIZES.findIndex(p => p.name === prizeData.name);
-      return index;
+    function getAngleForPrize(prizeName) {
+      const index = PRIZES.findIndex(p => p.name === prizeName);
+      if (index === -1) return 0;
+      return PRIZE_ANGLES[index];
     }
 
     // --------------------------------------------
-    // دالة قراءة الجائزة تحت السهم
-    // --------------------------------------------
-    function getPrizeUnderPointer() {
-      const pointerAngle = -Math.PI / 2;
-      let effectiveAngle = (pointerAngle - currentAngle + 2 * Math.PI) % (2 * Math.PI);
-      const sliceAngle = (2 * Math.PI) / PRIZES.length;
-      let index = Math.floor(effectiveAngle / sliceAngle);
-      if (index >= PRIZES.length) index = 0;
-      return PRIZES[index];
-    }
-
-    // --------------------------------------------
-    // رسم العجلة
+    // رسم العجلة (نفس الكود السابق)
     // --------------------------------------------
     function drawWheel(angle = 0) {
       const w = canvas.width, h = canvas.height;
@@ -151,35 +147,27 @@
     }
 
     // --------------------------------------------
-    // تدوير العجلة - تعتمد على prizeResult القادم من السيرفر
+    // تدوير العجلة - باستخدام الزاوية الثابتة
     // --------------------------------------------
     function spinWheel() {
       if (isSpinning || !prizeResult) return;
       isSpinning = true;
       document.getElementById('spinButton').disabled = true;
 
-      // البحث عن الجائزة في PRIZES
-      const prizeIndex = findPrizeIndex(prizeResult);
-      console.log("🎁 بيانات الجائزة من السيرفر:", prizeResult);
-      console.log("🔍 الفهرس المطابق في PRIZES:", prizeIndex);
+      // الزاوية المستهدفة من الجدول الثابت
+      const baseAngle = getAngleForPrize(prizeResult.name);
+      console.log(`🎁 الجائزة: ${prizeResult.name} | الزاوية الأساسية: ${baseAngle.toFixed(4)}`);
 
-      if (prizeIndex === -1) {
-        console.error("❌ الجائزة غير موجودة في PRIZES!", prizeResult);
-        alert("خطأ في الجائزة، يرجى المحاولة مرة أخرى.");
-        return;
-      }
-
-      const sliceAngle = (2 * Math.PI) / PRIZES.length;
-      // الزاوية التي تجعل منتصف القطاع تحت السهم تماماً
-      const target = (prizeIndex * sliceAngle) + (sliceAngle / 2) - Math.PI / 2;
+      // إضافة لفات عشوائية (8-12 لفة)
       const spins = 8 + Math.floor(Math.random() * 5);
-      targetAngle = target + (spins * 2 * Math.PI);
+      targetAngle = baseAngle + (spins * 2 * Math.PI);
+      
       spinVelocity = 0.4;
       animateSpin();
     }
 
     // --------------------------------------------
-    // حركة العجلة مع التصحيح القسري المزدوج
+    // حركة العجلة مع التباطؤ
     // --------------------------------------------
     function animateSpin() {
       spinVelocity *= 0.97;
@@ -189,27 +177,12 @@
       const distance = Math.abs(((targetAngle - currentAngle) % (2 * Math.PI) + 3 * Math.PI) % (2 * Math.PI) - Math.PI);
 
       if (spinVelocity < 0.001 && distance < 0.05) {
+        // 🎯 التوقف القسري على الزاوية المستهدفة بالضبط
         isSpinning = false;
         currentAngle = targetAngle;
         drawWheel(currentAngle);
-
-        // ---------- التصحيح القسري (المرحلة الأولى) ----------
-        const actualPrize = getPrizeUnderPointer();
-        console.log(`🎯 المستهدفة: ${prizeResult.name}, تحت السهم: ${actualPrize.name}`);
-        if (actualPrize.name !== prizeResult.name || actualPrize.value !== prizeResult.value) {
-          console.warn("⚠️ تصحيح العجلة يدوياً - عدم تطابق");
-          const correctIndex = findPrizeIndex(prizeResult);
-          if (correctIndex !== -1) {
-            const sliceAngle = (2 * Math.PI) / PRIZES.length;
-            currentAngle = (correctIndex * sliceAngle) + (sliceAngle / 2) - Math.PI / 2;
-            drawWheel(currentAngle);
-            // التحقق مرة أخرى
-            const afterFix = getPrizeUnderPointer();
-            console.log(`✅ بعد التصحيح: تحت السهم ${afterFix.name}`);
-          }
-        }
-        // ------------------------------------------------
-
+        
+        // عرض النتيجة
         showResult();
         return;
       }
@@ -217,7 +190,7 @@
     }
 
     // --------------------------------------------
-    // عرض النتيجة
+    // عرض نتيجة الفوز
     // --------------------------------------------
     function showResult() {
       const resultBox = document.getElementById('resultBox');
@@ -262,7 +235,7 @@
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         if (data.success) {
-          prizeResult = data.prize; // الكائن الكامل
+          prizeResult = data.prize;
           document.getElementById('statusMessage').innerHTML = '✅ يمكنك اللعب! اضغط على زر التدوير.';
           document.getElementById('spinButton').disabled = false;
         } else {
@@ -278,7 +251,7 @@
     }
 
     // --------------------------------------------
-    // ربط زر التدوير بالدالة بعد تحميل الصفحة
+    // بدء التشغيل
     // --------------------------------------------
     window.onload = async function() {
       userId = getUserIdFromUrl();
