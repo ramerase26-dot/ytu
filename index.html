@@ -2,9 +2,9 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🎡 عجلة الحظ - EZIO (النسخة الذكية)</title>
+  <title>🎡 عجلة الحظ - EZIO</title>
   <style>
+    /* أنماط بسيطة - يمكنك نسخها من الكود السابق */
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
     * { margin:0; padding:0; box-sizing:border-box; font-family:'Cairo',sans-serif; }
     body { background:linear-gradient(145deg,#1a0b2e 0%,#2d1a44 100%); min-height:100vh; display:flex; justify-content:center; align-items:center; padding:20px; }
@@ -41,9 +41,9 @@
 
   <script>
     // --------------------------------------------
-    // ⚙️ الإعدادات - غيّر الرابط هنا
+    // ⚠️⚠️⚠️ غيّر هذا الرابط إلى رابط Apps Script الخاص بك ⚠️⚠️⚠️
     // --------------------------------------------
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwZAuFWoYbK-V8UGlW19bkKR0SwEEg-LYadbfOO5GIAOv9sxClVJKMmrsAfc4Es1SCY1w/exec";
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxplgxfa9oios-Fe_wkQeIN_Swif5YbOH4jP2DNYN0aVWYTnU4Wm9trqTq_7MJemqa5Bw/exec";
     const WHEEL_BG_IMAGE = "https://i.postimg.cc/wB7MWQsq/IMG-20260129-003341-890.jpg";
 
     // --------------------------------------------
@@ -60,7 +60,7 @@
     ];
 
     // --------------------------------------------
-    // الزوايا الثابتة لكل جائزة (بالراديان)
+    // الزوايا الثابتة (محسوبة مسبقاً)
     // --------------------------------------------
     const PRIZE_ANGLES = [
       -1.34639685, // 5000
@@ -81,30 +81,35 @@
     let spinVelocity = 0;
     let targetAngle = 0;
     let isSpinning = false;
-    let selectedPrize = null; // الجائزة التي ستُمنح
+    let selectedPrize = null;   // الجائزة التي سيتم منحها
     let userId = null;
 
     // --------------------------------------------
-    // دالة اختيار جائزة عشوائية حسب الوزن
+    // دالة اختيار جائزة عشوائية حسب الوزن (نسب المنح)
     // --------------------------------------------
     function selectPrizeByWeight() {
       const totalWeight = PRIZES.reduce((sum, p) => sum + p.weight, 0);
-      let random = Math.random() * totalWeight;
+      let rand = Math.random() * totalWeight;
       for (const prize of PRIZES) {
-        if (random < prize.weight) return prize;
-        random -= prize.weight;
+        if (rand < prize.weight) {
+          console.log(`🎲 تم اختيار: ${prize.name} (الوزن: ${prize.weight})`);
+          return prize;
+        }
+        rand -= prize.weight;
       }
-      return PRIZES[0];
+      return PRIZES[0]; // fallback
     }
 
     // --------------------------------------------
-    // رسم العجلة
+    // رسم العجلة (مختصر)
     // --------------------------------------------
     function drawWheel(angle = 0) {
       const w = canvas.width, h = canvas.height;
       const cx = w/2, cy = h/2;
       const radius = Math.min(w, h)/2 - 10;
       ctx.clearRect(0,0,w,h);
+      
+      // الخلفية
       const bg = new Image();
       bg.src = WHEEL_BG_IMAGE;
       ctx.save();
@@ -150,7 +155,7 @@
     }
 
     // --------------------------------------------
-    // تدوير العجلة (الزاوية من الجائزة المختارة)
+    // تدوير العجلة
     // --------------------------------------------
     function spinWheel() {
       if (isSpinning || !selectedPrize) return;
@@ -159,9 +164,13 @@
 
       // الحصول على الزاوية من اسم الجائزة
       const index = PRIZES.findIndex(p => p.name === selectedPrize.name);
+      if (index === -1) {
+        alert("خطأ: الجائزة غير موجودة!");
+        return;
+      }
       const baseAngle = PRIZE_ANGLES[index];
       
-      // إضافة لفات عشوائية
+      // إضافة لفات عشوائية (8-12 لفة)
       const spins = 8 + Math.floor(Math.random() * 5);
       targetAngle = baseAngle + (spins * 2 * Math.PI);
       
@@ -184,7 +193,7 @@
         currentAngle = targetAngle;
         drawWheel(currentAngle);
         
-        // ✅ إرسال الجائزة إلى السيرفر للتسجيل
+        // ✅ إرسال الجائزة إلى السيرفر
         sendPrizeToServer();
         
         return;
@@ -193,7 +202,7 @@
     }
 
     // --------------------------------------------
-    // إرسال الجائزة إلى Google Apps Script
+    // إرسال الجائزة إلى Apps Script
     // --------------------------------------------
     async function sendPrizeToServer() {
       document.getElementById('statusMessage').innerHTML = '⏳ جارٍ تسجيل الجائزة...';
@@ -203,21 +212,21 @@
         const res = await fetch(url);
         const data = await res.json();
         if (data.success) {
-          document.getElementById('statusMessage').innerHTML = '✅ تم تسجيل الجائزة بنجاح!';
+          document.getElementById('statusMessage').innerHTML = '✅ تم تسجيل الجائزة وإرسالها إلى البوت!';
           showResult();
         } else {
-          document.getElementById('statusMessage').innerHTML = data.message || '❌ فشل التسجيل، يرجى التواصل مع الدعم.';
+          document.getElementById('statusMessage').innerHTML = data.message || '❌ فشل التسجيل';
+          showResult(); // نعرض النتيجة حتى لو فشل التسجيل
         }
       } catch (err) {
         console.error(err);
-        document.getElementById('statusMessage').innerHTML = '❌ فشل الاتصال بالسيرفر.';
-        // مع ذلك نعرض النتيجة للمستخدم
-        showResult();
+        document.getElementById('statusMessage').innerHTML = '❌ فشل الاتصال بالسيرفر، لكن الجائزة سارية.';
+        showResult(); // نعرض النتيجة للمستخدم
       }
     }
 
     // --------------------------------------------
-    // عرض نتيجة الفوز
+    // عرض النتيجة
     // --------------------------------------------
     function showResult() {
       const resultBox = document.getElementById('resultBox');
@@ -248,7 +257,7 @@
     }
 
     // --------------------------------------------
-    // التحقق من الأهلية عبر السيرفر
+    // التحقق من الأهلية عبر Apps Script
     // --------------------------------------------
     async function checkEligibility() {
       if (!userId) {
@@ -263,10 +272,10 @@
         const data = await res.json();
         if (data.success) {
           document.getElementById('statusMessage').innerHTML = '✅ يمكنك اللعب! اضغط على زر التدوير.';
-          document.getElementById('spinButton').disabled = false;
-          // اختيار الجائزة مسبقاً
+          // ✅ اختيار الجائزة عشوائياً هنا
           selectedPrize = selectPrizeByWeight();
           console.log("🎁 الجائزة المختارة:", selectedPrize);
+          document.getElementById('spinButton').disabled = false;
           return true;
         } else {
           document.getElementById('statusMessage').innerHTML = data.message || '❌ لا يمكنك اللعب الآن.';
@@ -291,11 +300,9 @@
         document.getElementById('statusMessage').innerHTML = '❌ الرابط غير صحيح، يرجى العودة إلى البوت.';
         return;
       }
-      const eligible = await checkEligibility();
       drawWheel();
-      if (eligible) {
-        document.getElementById('spinButton').onclick = spinWheel;
-      }
+      await checkEligibility();
+      document.getElementById('spinButton').onclick = spinWheel;
     };
   </script>
 </body>
