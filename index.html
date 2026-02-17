@@ -1,301 +1,554 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🎡 y - EZIO (النسخة النهائية)</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
-    * { margin:0; padding:0; box-sizing:border-box; font-family:'Cairo',sans-serif; }
-    body { background:linear-gradient(145deg,#1a0b2e 0%,#2d1a44 100%); min-height:100vh; display:flex; justify-content:center; align-items:center; padding:20px; }
-    .container { max-width:700px; width:100%; background:rgba(10,5,20,0.7); backdrop-filter:blur(10px); border:2px solid #8a2be2; border-radius:40px; padding:30px 20px; box-shadow:0 20px 40px rgba(138,43,226,0.3); text-align:center; }
-    h1 { color:#fff; text-shadow:0 0 10px #b266ff,0 0 20px #8a2be2; margin-bottom:10px; font-size:2.2rem; }
-    .sub { color:#c084fc; margin-bottom:25px; font-size:1.1rem; }
-    .wheel-wrapper { position:relative; width:300px; height:300px; margin:20px auto; }
-    canvas { width:100%; height:100%; display:block; border-radius:50%; box-shadow:0 0 0 8px #4b0082,0 0 0 12px #2e0854,0 20px 40px black; }
-    .pointer { position:absolute; top:-15px; left:50%; transform:translateX(-50%); width:0; height:0; border-left:20px solid transparent; border-right:20px solid transparent; border-top:35px solid #ffd700; filter:drop-shadow(0 0 10px gold); z-index:10; }
-    .info { margin:30px 0 20px; padding:15px; background:rgba(75,0,130,0.5); border-radius:20px; border:1px solid #b266ff; color:white; }
-    .spin-btn { background:linear-gradient(45deg,#8a2be2,#4b0082); color:white; border:none; padding:16px 50px; font-size:1.5rem; font-weight:bold; border-radius:60px; cursor:pointer; transition:0.3s; box-shadow:0 10px 0 #2e0854,0 10px 30px #8a2be2; margin-bottom:20px; width:100%; max-width:300px; }
-    .spin-btn:active { transform:translateY(10px); box-shadow:0 2px 0 #2e0854,0 10px 30px #8a2be2; }
-    .spin-btn:disabled { opacity:0.6; transform:translateY(5px); box-shadow:0 5px 0 #2e0854; cursor:not-allowed; }
-    .result { margin-top:25px; padding:20px; background:rgba(255,215,0,0.15); border-right:8px solid #ffd700; border-radius:15px; font-size:1.3rem; color:#fff; text-align:right; display:none; }
-    .result.show { display:block; animation:fadeIn 0.5s; }
-    @keyframes fadeIn { from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
-    .footer { color:#a78bfa; margin-top:20px; font-size:0.9rem; }
-    a { color:#ffd700; text-decoration:none; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎰 عجلة الحظ - IChancy</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('https://i.postimg.cc/wB7MWQsq/IMG-20260129-003341-890.jpg') center/cover no-repeat;
+            opacity: 0.15;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 40px;
+            padding: 30px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 90%;
+            max-width: 600px;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        h1 span {
+            background: linear-gradient(135deg, #9b59b6, #3498db);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 1.2em;
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto 30px;
+        }
+
+        canvas {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 50%;
+            box-shadow: 0 0 50px rgba(155, 89, 182, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        canvas.spinning {
+            animation: spin 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 40px solid #f1c40f;
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.3));
+            z-index: 10;
+        }
+
+        .info {
+            text-align: center;
+            color: white;
+            margin: 20px 0;
+        }
+
+        .prize {
+            font-size: 2em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #9b59b6, #3498db);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 10px 0;
+        }
+
+        .next-spin {
+            color: #95a5a6;
+            font-size: 1.1em;
+        }
+
+        .next-spin span {
+            color: #f1c40f;
+            font-weight: bold;
+        }
+
+        .spin-btn {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 20px 0;
+            font-weight: bold;
+            box-shadow: 0 10px 20px rgba(155, 89, 182, 0.3);
+        }
+
+        .spin-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(155, 89, 182, 0.4);
+        }
+
+        .spin-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .message {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            margin: 20px 0;
+        }
+
+        .error {
+            color: #e74c3c;
+            font-size: 1.2em;
+        }
+
+        .loading {
+            text-align: center;
+            color: white;
+        }
+
+        .prize-display {
+            font-size: 1.5em;
+            color: #f1c40f;
+            margin-top: 10px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .gift-box {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            border-radius: 20px;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5em;
+            color: white;
+            animation: pulse 1.5s ease infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .gift-text {
+            font-size: 1.2em;
+            color: white;
+            margin-top: 10px;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
-  <div class="container">
-    <h1>🎡 عجلة الحظ</h1>
-    <div class="sub">EZIO BOOT • مرة كل 24 ساعة</div>
-    <div class="wheel-wrapper">
-      <canvas id="wheelCanvas" width="500" height="500"></canvas>
-      <div class="pointer"></div>
-    </div>
-    <div id="statusMessage" class="info">🔄 جارٍ التحقق من أهليتك...</div>
-    <button class="spin-btn" id="spinButton" disabled>🎲 ابدأ التدوير</button>
-    <div id="resultBox" class="result"></div>
-    <div class="footer">🕒 كل 24 ساعة • جوائز حصرية<br><a href="https://t.me/EZIOBOOT" target="_blank">@EZIOBOOT</a></div>
-  </div>
-
-  <script>
-    // ============================================
-    // ⚠️⚠️⚠️  غيّر هذا الرابط إلى رابط Apps Script الخاص بك ⚠️⚠️⚠️
-    // ============================================
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyEvmg155UUs7-GEem2a-fWArG2oaFyP7F1HgCwLOL-0sHq3jmo68ZtDIqOAvwPP32pVQ/exec";
-    const WHEEL_BG_IMAGE = "https://i.postimg.cc/wB7MWQsq/IMG-20260129-003341-890.jpg";
-
-    // ============================================
-    // الجوائز والأوزان (نسب المنح) – 7 جوائز فقط
-    // ============================================
-    const PRIZES = [
-      { name: "5000",     value: 5000,    type: "fixed",   color: "#4B0082", weight: 30 },
-      { name: "10000",    value: 10000,   type: "fixed",   color: "#000000", weight: 25 },
-      { name: "5%",       value: 5,       type: "percent", color: "#6A0DAD", weight: 20 },
-      { name: "100000",   value: 100000,  type: "fixed",   color: "#000000", weight: 12 },
-      { name: "10%",      value: 10,      type: "percent", color: "#8A2BE2", weight: 8 },
-      { name: "500000",   value: 500000,  type: "fixed",   color: "#000000", weight: 4 },
-      { name: "1000000",  value: 1000000, type: "fixed",   color: "#9400D3", weight: 1 }
-    ];
-
-    // ============================================
-    // الزوايا الثابتة (محسوبة بدقة، كل زاوية تجعل السهم في منتصف القطاع)
-    // ============================================
-    const PRIZE_ANGLES = [
-      -1.34639685, // 5000
-      -0.44879895, // 10000
-       0.44879895, // 5%
-       1.34639685, // 100000
-       2.24399475, // 10%
-       3.14159265, // 500000
-       4.03919055  // 1000000
-    ];
-
-    // ============================================
-    // متغيرات العجلة
-    // ============================================
-    const canvas = document.getElementById('wheelCanvas');
-    const ctx = canvas.getContext('2d');
-    let currentAngle = 0;
-    let spinVelocity = 0;
-    let targetAngle = 0;
-    let isSpinning = false;
-    let selectedPrize = null; // الجائزة التي سيتم منحها
-    let userId = null;
-
-    // ============================================
-    // دالة اختيار جائزة عشوائية حسب الوزن (نسب المنح)
-    // ============================================
-    function selectPrizeByWeight() {
-      const totalWeight = PRIZES.reduce((sum, p) => sum + p.weight, 0);
-      let rand = Math.random() * totalWeight;
-      for (const prize of PRIZES) {
-        if (rand < prize.weight) {
-          console.log(`🎲 تم اختيار: ${prize.name} (الوزن: ${prize.weight})`);
-          return prize;
-        }
-        rand -= prize.weight;
-      }
-      return PRIZES[0]; // fallback
-    }
-
-    // ============================================
-    // رسم العجلة
-    // ============================================
-    function drawWheel(angle = 0) {
-      const w = canvas.width, h = canvas.height;
-      const cx = w / 2, cy = h / 2;
-      const radius = Math.min(w, h) / 2 - 10;
-      ctx.clearRect(0, 0, w, h);
-
-      // رسم الخلفية
-      const bg = new Image();
-      bg.src = WHEEL_BG_IMAGE;
-      bg.crossOrigin = "Anonymous";
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
-      ctx.clip();
-      ctx.drawImage(bg, 0, 0, w, h);
-      ctx.restore();
-
-      const sliceAngle = (2 * Math.PI) / PRIZES.length;
-      for (let i = 0; i < PRIZES.length; i++) {
-        const start = i * sliceAngle + angle;
-        const end = start + sliceAngle;
-        ctx.beginPath();
-        ctx.moveTo(cx, cy);
-        ctx.arc(cx, cy, radius, start, end);
-        ctx.closePath();
-        ctx.fillStyle = PRIZES[i].color;
-        ctx.fill();
-        ctx.strokeStyle = "rgba(255,255,255,0.3)";
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        ctx.save();
-        ctx.translate(cx, cy);
-        ctx.rotate(start + sliceAngle / 2);
-        ctx.textAlign = "center";
-        ctx.font = "bold 20px 'Cairo', sans-serif";
-        ctx.fillStyle = "#FFF";
-        ctx.shadowColor = "black";
-        ctx.shadowBlur = 8;
-        ctx.fillText(PRIZES[i].name, radius * 0.65, 10);
-        ctx.restore();
-      }
-
-      ctx.beginPath();
-      ctx.arc(cx, cy, radius * 0.15, 0, 2 * Math.PI);
-      ctx.fillStyle = "#2E0854";
-      ctx.shadowBlur = 20;
-      ctx.shadowColor = "#8A2BE2";
-      ctx.fill();
-      ctx.shadowBlur = 0;
-    }
-
-    // ============================================
-    // تدوير العجلة – تستخدم الزاوية الثابتة للجائزة المختارة
-    // ============================================
-    function spinWheel() {
-      if (isSpinning || !selectedPrize) return;
-      isSpinning = true;
-      document.getElementById('spinButton').disabled = true;
-
-      const index = PRIZES.findIndex(p => p.name === selectedPrize.name);
-      if (index === -1) {
-        console.error("❌ الجائزة غير موجودة في PRIZES!");
-        return;
-      }
-      const baseAngle = PRIZE_ANGLES[index];
-      const spins = 8 + Math.floor(Math.random() * 5);
-      targetAngle = baseAngle + (spins * 2 * Math.PI);
-      spinVelocity = 0.4;
-      animateSpin();
-    }
-
-    // ============================================
-    // حركة العجلة والتباطؤ
-    // ============================================
-    function animateSpin() {
-      spinVelocity *= 0.97;
-      currentAngle += spinVelocity;
-      drawWheel(currentAngle);
-
-      const distance = Math.abs(((targetAngle - currentAngle) % (2 * Math.PI) + 3 * Math.PI) % (2 * Math.PI) - Math.PI);
-
-      if (spinVelocity < 0.001 && distance < 0.05) {
-        isSpinning = false;
-        currentAngle = targetAngle;
-        drawWheel(currentAngle);
-        // ✅ إرسال الجائزة إلى السيرفر
-        sendPrizeToServer();
-        return;
-      }
-      requestAnimationFrame(animateSpin);
-    }
-
-    // ============================================
-    // إرسال الجائزة إلى Google Apps Script
-    // ============================================
-    async function sendPrizeToServer() {
-      document.getElementById('statusMessage').innerHTML = '⏳ جارٍ تسجيل الجائزة...';
-      const url = `${APPS_SCRIPT_URL}?action=record&user_id=${userId}&prize=${encodeURIComponent(JSON.stringify(selectedPrize))}`;
-      try {
-        const res = await fetch(url);
-        const data = await res.json();
-        if (data.success) {
-          document.getElementById('statusMessage').innerHTML = '✅ تم التسجيل وإرسال إشعار البوت!';
-        } else {
-          document.getElementById('statusMessage').innerHTML = data.message || '❌ فشل التسجيل';
-        }
-        showResult();
-      } catch (err) {
-        console.error(err);
-        document.getElementById('statusMessage').innerHTML = '❌ فشل الاتصال بالسيرفر';
-        showResult();
-      }
-    }
-
-    // ============================================
-    // عرض النتيجة للمستخدم
-    // ============================================
-    function showResult() {
-      const resultBox = document.getElementById('resultBox');
-      let prizeText = '';
-      if (selectedPrize.type === 'percent') {
-        prizeText = `🎁 <b>${selectedPrize.value}%</b> رصيد إضافي على شحنتك القادمة!`;
-      } else {
-        prizeText = `💰 <b>${selectedPrize.value}</b> نقطة تم إضافتها إلى محفظتك!`;
-      }
-      resultBox.innerHTML = `
-        <div style="display:flex; align-items:center; gap:10px;">
-          <span style="font-size:3rem;">🎉</span>
-          <div>
-            <h3 style="color:#FFD700; margin:0;">تهانينا!</h3>
-            <p style="margin:5px 0 0; font-size:1.2rem;">${prizeText}</p>
-          </div>
+    <div class="container">
+        <h1>🎰 <span>عجلة الحظ</span> 🎰</h1>
+        
+        <div id="message" class="message"></div>
+        
+        <div id="gameContent" style="display: none;">
+            <div class="info">
+                <div class="prize" id="lastPrize"></div>
+                <div class="next-spin" id="nextSpin"></div>
+            </div>
+            
+            <div class="wheel-container">
+                <div class="pointer"></div>
+                <canvas id="wheelCanvas" width="500" height="500"></canvas>
+            </div>
+            
+            <div style="text-align: center;">
+                <button class="spin-btn" id="spinBtn" onclick="spinWheel()">🎰 دير العجلة</button>
+            </div>
+            
+            <div id="result" style="text-align: center;"></div>
         </div>
-      `;
-      resultBox.classList.add('show');
-    }
+    </div>
 
-    // ============================================
-    // الحصول على معرف المستخدم من الرابط
-    // ============================================
-    function getUserIdFromUrl() {
-      const params = new URLSearchParams(window.location.search);
-      return params.get('user_id');
-    }
+    <script>
+        // جوائز عجلة الحظ مع نسب الفوز
+        const prizes = [
+            { value: 5000, probability: 0.02, color: '#9b59b6' },     // 2%
+            { value: 10000, probability: 0.01, color: '#8e44ad' },    // 1%
+            { value: 50000, probability: 0.005, color: '#6c3483' },   // 0.5%
+            { value: 100000, probability: 0.002, color: '#5e3370' },  // 0.2%
+            { value: 500000, probability: 0.0005, color: '#4a235a' }, // 0.05%
+            { value: 1000000, probability: 0.0001, color: '#2c003e' } // 0.01%
+        ];
 
-    // ============================================
-    // التحقق من الأهلية عبر Apps Script
-    // ============================================
-    async function checkEligibility() {
-      if (!userId) {
-        document.getElementById('statusMessage').innerHTML = '❌ خطأ: لم يتم العثور على معرف المستخدم.';
-        return false;
-      }
-      document.getElementById('statusMessage').innerHTML = '⏳ جارٍ التحقق من أهليتك...';
-      const url = `${APPS_SCRIPT_URL}?action=check&user_id=${userId}`;
-      try {
-        const res = await fetch(url);
-        const data = await res.json();
-        if (data.success) {
-          document.getElementById('statusMessage').innerHTML = '✅ يمكنك اللعب! اضغط على زر التدوير.';
-          // ✅ اختيار الجائزة عشوائياً هنا
-          selectedPrize = selectPrizeByWeight();
-          console.log("🎁 الجائزة المختارة:", selectedPrize);
-          document.getElementById('spinButton').disabled = false;
-          return true;
-        } else {
-          document.getElementById('statusMessage').innerHTML = data.message || '❌ لا يمكنك اللعب الآن.';
-          if (data.remaining) {
-            document.getElementById('statusMessage').innerHTML += `<br>🕒 الوقت المتبقي: ${data.remaining.toFixed(1)} ساعة`;
-          }
-          return false;
+        // إعدادات Google Sheets
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzrYZsjN5gEtJFBtYtax8_-iTDwJ15TksMFGFP6wkhdSXUR2D5Db3atccLNUVKj2uud/exec';
+
+        let userId = null;
+        let canvas = document.getElementById('wheelCanvas');
+        let ctx = canvas.getContext('2d');
+        let isSpinning = false;
+        let currentAngle = 0;
+        let targetAngle = 0;
+        let spinAnimation = null;
+        let lastSpinTime = null;
+
+        // دالة الحصول على معرّف المستخدم من الرابط
+        function getUserIdFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('user_id');
         }
-      } catch (err) {
-        console.error(err);
-        document.getElementById('statusMessage').innerHTML = '❌ فشل الاتصال بالخادم. تحقق من الرابط.';
-        return false;
-      }
-    }
 
-    // ============================================
-    // بدء التشغيل
-    // ============================================
-    window.onload = async function() {
-      userId = getUserIdFromUrl();
-      if (!userId) {
-        document.getElementById('statusMessage').innerHTML = '❌ الرابط غير صحيح، يرجى العودة إلى البوت.';
-        return;
-      }
-      drawWheel();
-      await checkEligibility();
-      document.getElementById('spinButton').onclick = spinWheel;
-    };
-  </script>
+        // دالة التحقق من وجود المستخدم في Google Sheets
+        async function checkUserInSheet(userId) {
+            try {
+                const response = await axios.get(
+                    `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/A:A?key=${API_KEY}`
+                );
+                
+                const rows = response.data.values || [];
+                return rows.some(row => row[0] === userId);
+            } catch (error) {
+                console.error('خطأ في التحقق من المستخدم:', error);
+                return false;
+            }
+        }
+
+        // دالة الحصول على آخر وقت لفة للمستخدم
+        async function getLastSpinTime(userId) {
+            try {
+                const response = await axios.get(
+                    `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/A:G?key=${API_KEY}`
+                );
+                
+                const rows = response.data.values || [];
+                for (let i = 0; i < rows.length; i++) {
+                    if (rows[i][0] === userId) {
+                        return rows[i][6] || null; // العمود G هو السابع (index 6)
+                    }
+                }
+                return null;
+            } catch (error) {
+                console.error('خطأ في الحصول على وقت اللفة:', error);
+                return null;
+            }
+        }
+
+        // دالة تسجيل الفوز في الجدول
+        async function recordWin(userId, prize) {
+            try {
+                // الحصول على الصف الخاص بالمستخدم
+                const response = await axios.get(
+                    `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/A:G?key=${API_KEY}`
+                );
+                
+                const rows = response.data.values || [];
+                let rowIndex = -1;
+                
+                for (let i = 0; i < rows.length; i++) {
+                    if (rows[i][0] === userId) {
+                        rowIndex = i + 1; // Google Sheets API uses 1-based indexing
+                        break;
+                    }
+                }
+                
+                if (rowIndex === -1) return false;
+                
+                // تحديث الجائزة في العمود B (الثاني)
+                const now = new Date();
+                const dateTime = now.toISOString();
+                
+                await axios.put(
+                    `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/B${rowIndex}?valueInputOption=RAW&key=${API_KEY}`,
+                    {
+                        values: [[prize.toString()]]
+                    },
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${API_KEY}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+                
+                // تحديث وقت اللفة في العمود G (السابع)
+                await axios.put(
+                    `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/G${rowIndex}?valueInputOption=RAW&key=${API_KEY}`,
+                    {
+                        values: [[dateTime]]
+                    },
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${API_KEY}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+                
+                return true;
+            } catch (error) {
+                console.error('خطأ في تسجيل الفوز:', error);
+                return false;
+            }
+        }
+
+        // دالة حساب وقت الانتظار المتبقي
+        function getRemainingTime(lastSpin) {
+            if (!lastSpin) return 0;
+            
+            const lastSpinDate = new Date(lastSpin);
+            const now = new Date();
+            const diffHours = (now - lastSpinDate) / (1000 * 60 * 60);
+            
+            if (diffHours >= 24) return 0;
+            return Math.ceil(24 - diffHours);
+        }
+
+        // رسم العجلة
+        function drawWheel(highlightIndex = -1) {
+            const anglePerPrize = (Math.PI * 2) / prizes.length;
+            
+            for (let i = 0; i < prizes.length; i++) {
+                const startAngle = i * anglePerPrize;
+                const endAngle = (i + 1) * anglePerPrize;
+                
+                ctx.beginPath();
+                ctx.moveTo(250, 250);
+                ctx.arc(250, 250, 250, startAngle, endAngle);
+                ctx.closePath();
+                
+                // الألوان: أسود وبنفسجي فقط
+                ctx.fillStyle = i % 2 === 0 ? '#000000' : prizes[i].color;
+                ctx.fill();
+                
+                // رسم النص
+                ctx.save();
+                ctx.translate(250, 250);
+                ctx.rotate(startAngle + anglePerPrize / 2);
+                ctx.textAlign = 'center';
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 16px Cairo';
+                
+                // عرض القيمة أو "هدية" عند التدوير
+                const text = isSpinning ? 'هدية' : prizes[i].value.toLocaleString();
+                ctx.fillText(text, 150, 10);
+                ctx.restore();
+                
+                // رسم الخطوط الفاصلة
+                ctx.beginPath();
+                ctx.moveTo(250, 250);
+                ctx.lineTo(250 + 250 * Math.cos(endAngle), 250 + 250 * Math.sin(endAngle));
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+            
+            // رسم الدائرة الداخلية
+            ctx.beginPath();
+            ctx.arc(250, 250, 50, 0, Math.PI * 2);
+            ctx.fillStyle = '#000000';
+            ctx.fill();
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        }
+
+        // دالة اختيار الجائزة بناءً على النسب
+        function selectPrize() {
+            const random = Math.random();
+            let cumulativeProbability = 0;
+            
+            for (const prize of prizes) {
+                cumulativeProbability += prize.probability;
+                if (random < cumulativeProbability) {
+                    return prize;
+                }
+            }
+            
+            return prizes[0]; // في حالة الخطأ، أعطي أصغر جائزة
+        }
+
+        // دالة تدوير العجلة
+        async function spinWheel() {
+            if (isSpinning) return;
+            
+            const remainingHours = getRemainingTime(lastSpinTime);
+            if (remainingHours > 0) {
+                document.getElementById('result').innerHTML = `
+                    <div class="error">⏰ يجب الانتظار ${remainingHours} ساعة للفة التالية</div>
+                `;
+                return;
+            }
+            
+            isSpinning = true;
+            document.getElementById('spinBtn').disabled = true;
+            
+            // إخفاء الجوائز وإظهار "هدية"
+            drawWheel();
+            
+            // اختيار الجائزة
+            const selectedPrize = selectPrize();
+            
+            // حساب الزاوية المستهدفة
+            const prizeIndex = prizes.findIndex(p => p.value === selectedPrize.value);
+            const anglePerPrize = 360 / prizes.length;
+            targetAngle = (prizeIndex * anglePerPrize) + (anglePerPrize / 2) + 360 * 5; // 5 دورات كاملة
+            
+            // بدء حركة العجلة
+            const startTime = performance.now();
+            const startAngle = currentAngle;
+            
+            function animateSpin(currentTime) {
+                const elapsed = currentTime - startTime;
+                const duration = 3000; // 3 ثوان
+                
+                if (elapsed < duration) {
+                    // easeOutCubic
+                    const progress = 1 - Math.pow(1 - elapsed / duration, 3);
+                    currentAngle = startAngle + (targetAngle - startAngle) * progress;
+                    
+                    canvas.style.transform = `rotate(${currentAngle}deg)`;
+                    requestAnimationFrame(animateSpin);
+                } else {
+                    // انتهى التدوير
+                    currentAngle = targetAngle % 360;
+                    canvas.style.transform = `rotate(${currentAngle}deg)`;
+                    
+                    // إظهار النتيجة
+                    document.getElementById('result').innerHTML = `
+                        <div class="prize-display">🎉 مبروك! ربحت ${selectedPrize.value.toLocaleString()} 🎉</div>
+                    `;
+                    
+                    // تسجيل الفوز في الجدول
+                    recordWin(userId, selectedPrize.value);
+                    
+                    // تحديث وقت اللفة
+                    lastSpinTime = new Date().toISOString();
+                    updateNextSpin();
+                    
+                    // إظهار الجوائز مرة أخرى
+                    isSpinning = false;
+                    document.getElementById('spinBtn').disabled = false;
+                    drawWheel();
+                }
+            }
+            
+            canvas.classList.add('spinning');
+            requestAnimationFrame(animateSpin);
+        }
+
+        // دالة تحديث عرض وقت اللفة التالية
+        function updateNextSpin() {
+            const remainingHours = getRemainingTime(lastSpinTime);
+            const nextSpinElement = document.getElementById('nextSpin');
+            
+            if (remainingHours > 0) {
+                nextSpinElement.innerHTML = `⏳ اللفة التالية بعد <span>${remainingHours}</span> ساعة`;
+            } else {
+                nextSpinElement.innerHTML = '✅ متاح للعب الآن';
+            }
+        }
+
+        // التهيئة عند تحميل الصفحة
+        window.onload = async function() {
+            const messageDiv = document.getElementById('message');
+            const gameContent = document.getElementById('gameContent');
+            
+            userId = getUserIdFromUrl();
+            
+            if (!userId) {
+                messageDiv.innerHTML = '<div class="error">❌ رابط غير صالح</div>';
+                return;
+            }
+            
+            messageDiv.innerHTML = '<div class="loading">جاري التحقق من البيانات...</div>';
+            
+            // التحقق من وجود المستخدم
+            const userExists = await checkUserInSheet(userId);
+            
+            if (!userExists) {
+                messageDiv.innerHTML = '<div class="error">❌ يجب إنشاء حساب في البوت أولاً</div>';
+                return;
+            }
+            
+            // الحصول على آخر وقت لفة
+            lastSpinTime = await getLastSpinTime(userId);
+            
+            // إخفاء رسالة التحميل وإظهار اللعبة
+            messageDiv.style.display = 'none';
+            gameContent.style.display = 'block';
+            
+            // رسم العجلة
+            drawWheel();
+            
+            // تحديث عرض الوقت
+            updateNextSpin();
+            
+            // التحقق من آخر جائزة للمستخدم (يمكن إضافتها إذا أردت)
+        };
+    </script>
 </body>
 </html>
