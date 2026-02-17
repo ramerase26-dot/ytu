@@ -248,7 +248,7 @@
         const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwRGtorF5g-mpfvuVgIg4q8sFMDJOxY8-cv21J5FFVTscfdAAKadQX1iIZSuA6NqNqv/exec';
 
         let userId = null;
-        let canvas = document.getElementById('wheelCanvas');
+        let canvas = document.        getElementById('wheelCanvas');
         let ctx = canvas.getContext('2d');
         let isSpinning = false;
         let currentAngle = 0;
@@ -260,17 +260,19 @@
         function getUserIdFromUrl() {
             const urlParams = new URLSearchParams(window.location.search);
             return urlParams.get('user_id');
-        }
+}
 
         // دالة التحقق من وجود المستخدم في Google Sheets
         async function checkUserInSheet(userId) {
             try {
-                const response = await axios.get(
-                    `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/A:A?key=${API_KEY}`
-                );
-                
-                const rows = response.data.values || [];
-                return rows.some(row => row[0] === userId);
+                const response = await axios.get(WEB_APP_URL, {
+                    params: {
+                        action: 'checkUser',
+                        userId: userId
+                    }
+                });
+        
+                return response.data.exists;
             } catch (error) {
                 console.error('خطأ في التحقق من المستخدم:', error);
                 return false;
@@ -280,17 +282,14 @@
         // دالة الحصول على آخر وقت لفة للمستخدم
         async function getLastSpinTime(userId) {
             try {
-                const response = await axios.get(
-                    `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/A:G?key=${API_KEY}`
-                );
-                
-                const rows = response.data.values || [];
-                for (let i = 0; i < rows.length; i++) {
-                    if (rows[i][0] === userId) {
-                        return rows[i][6] || null; // العمود G هو السابع (index 6)
+                const response = await axios.get(WEB_APP_URL, {
+                    params: {
+                        action: 'getLastSpin',
+                        userId: userId
                     }
-                }
-                return null;
+                });
+        
+                return response.data.lastSpin;
             } catch (error) {
                 console.error('خطأ في الحصول على وقت اللفة:', error);
                 return null;
@@ -300,60 +299,20 @@
         // دالة تسجيل الفوز في الجدول
         async function recordWin(userId, prize) {
             try {
-                // الحصول على الصف الخاص بالمستخدم
-                const response = await axios.get(
-                    `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/A:G?key=${API_KEY}`
-                );
-                
-                const rows = response.data.values || [];
-                let rowIndex = -1;
-                
-                for (let i = 0; i < rows.length; i++) {
-                    if (rows[i][0] === userId) {
-                        rowIndex = i + 1; // Google Sheets API uses 1-based indexing
-                        break;
+                const response = await axios.get(WEB_APP_URL, {
+                    params: {
+                        action: 'recordWin',
+                        userId: userId,
+                        prize: prize
                     }
-                }
-                
-                if (rowIndex === -1) return false;
-                
-                // تحديث الجائزة في العمود B (الثاني)
-                const now = new Date();
-                const dateTime = now.toISOString();
-                
-                await axios.put(
-                    `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/B${rowIndex}?valueInputOption=RAW&key=${API_KEY}`,
-                    {
-                        values: [[prize.toString()]]
-                    },
-                    {
-                        headers: {
-                            'Authorization': `Bearer ${API_KEY}`,
-                            'Content-Type': 'application/json'
-                        }
-                    }
-                );
-                
-                // تحديث وقت اللفة في العمود G (السابع)
-                await axios.put(
-                    `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/G${rowIndex}?valueInputOption=RAW&key=${API_KEY}`,
-                    {
-                        values: [[dateTime]]
-                    },
-                    {
-                        headers: {
-                            'Authorization': `Bearer ${API_KEY}`,
-                            'Content-Type': 'application/json'
-                        }
-                    }
-                );
-                
-                return true;
+                });
+        
+                return response.data.success;
             } catch (error) {
                 console.error('خطأ في تسجيل الفوز:', error);
                 return false;
-            }
-        }
+    }
+}
 
         // دالة حساب وقت الانتظار المتبقي
         function getRemainingTime(lastSpin) {
