@@ -17,13 +17,11 @@
             justify-content: center;
             align-items: center;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            /* الصورة الخلفية */
             background: url('https://i.postimg.cc/wB7MWQsq/IMG-20260129-003341-890.jpg') no-repeat center center fixed;
             background-size: cover;
             position: relative;
         }
 
-        /* طبقة تغميق فوق الصورة */
         body::before {
             content: '';
             position: fixed;
@@ -31,7 +29,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.6); /* درجة التغميق */
+            background: rgba(0, 0, 0, 0.6);
             z-index: 0;
         }
 
@@ -59,6 +57,7 @@
             border: 2px solid gold;
             font-size: 1.2em;
             box-shadow: 0 0 20px gold;
+            display: none;
         }
 
         .wheel-container {
@@ -97,7 +96,6 @@
             box-shadow: inset 0 0 15px rgba(255,215,0,0.3);
         }
 
-        /* 8 أجزاء متساوية للعجلة */
         .segment:nth-child(1) { transform: rotate(0deg) skewY(22.5deg); background: #4a1d6d; }
         .segment:nth-child(2) { transform: rotate(45deg) skewY(22.5deg); background: #2c0b3a; }
         .segment:nth-child(3) { transform: rotate(90deg) skewY(22.5deg); background: #4a1d6d; }
@@ -165,8 +163,6 @@
             width: 80%;
             box-shadow: 0 5px 15px rgba(155, 77, 255, 0.6), 0 0 20px gold;
             border: 2px solid gold;
-            position: relative;
-            z-index: 1;
         }
 
         .spin-btn:hover:not(:disabled) {
@@ -207,7 +203,6 @@
             font-size: 12px;
         }
 
-        /* تأثير الإضاءة حول العجلة */
         .glow-effect {
             position: absolute;
             top: -10px;
@@ -223,13 +218,12 @@
 </head>
 <body>
     <div class="container">
-        <div id="timerBox" class="timer-box" style="display: none;"></div>
+        <div id="timerBox" class="timer-box"></div>
 
         <div class="wheel-container">
             <div class="glow-effect"></div>
             <div class="pointer"></div>
             <div class="wheel" id="wheel">
-                <!-- كل الأجزاء تحتوي على نص "PIT" -->
                 <div class="segment"><span>PIT</span></div>
                 <div class="segment"><span>PIT</span></div>
                 <div class="segment"><span>PIT</span></div>
@@ -256,11 +250,10 @@
 
     <script>
         // ========== الإعدادات ==========
-        const API_URL = 'https://script.google.com/macros/s/AKfycbxlEUe1RyBuoJagkGB0-oiXmXV6Np8qfupS6MYploc8IYIDjQ8_uZykZdD9Xqe4gQ8s/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxflwf3dgKDUQowETNGo8pBcbonLb4dq8aq7q2ot4NmXzvmhtfnkT4MXBETEM6Q6C2NWQ/exec';
         const TELEGRAM_ID = new URLSearchParams(window.location.search).get('user');
-        const SPIN_COOLDOWN = 24 * 60 * 60 * 1000; // 24 ساعة
 
-        // ========== الجوائز مع النسب المحددة ==========
+        // ========== الجوائز مع النسب ==========
         const prizes = [
             { text: '5000', value: 5000, type: 'points', probability: 15 },
             { text: '10000', value: 10000, type: 'points', probability: 10 },
@@ -273,43 +266,67 @@
         ];
 
         let isSpinning = false;
-        let lastSpinTime = localStorage.getItem(`lastSpin_${TELEGRAM_ID}`);
+        let countdownInterval = null;
 
-        window.onload = function() {
+        // ========== عند تحميل الصفحة ==========
+        window.onload = async function() {
             if (!TELEGRAM_ID) {
                 alert('❌ خطأ: لا يوجد معرف مستخدم');
                 document.getElementById('spinBtn').disabled = true;
                 return;
             }
-            checkSpinCooldown();
+            
+            await checkCanSpin();
         };
 
-        function checkSpinCooldown() {
-            if (!lastSpinTime) return;
-
-            const now = Date.now();
-            const timeSinceLastSpin = now - parseInt(lastSpinTime);
-
-            if (timeSinceLastSpin < SPIN_COOLDOWN) {
-                const remainingTime = SPIN_COOLDOWN - timeSinceLastSpin;
-                disableSpin(remainingTime);
-            } else {
-                localStorage.removeItem(`lastSpin_${TELEGRAM_ID}`);
+        // ========== التحقق من وقت آخر تدوير من Drive ==========
+        async function checkCanSpin() {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'canSpin',
+                        telegramId: TELEGRAM_ID
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    if (data.canSpin) {
+                        enableSpin();
+                    } else {
+                        startCountdown(data.remainingTime);
+                    }
+                }
+                
+            } catch (error) {
+                console.error('خطأ في التحقق:', error);
+                enableSpin(); // في حالة خطأ، نسمح بالتدوير
             }
         }
 
-        function disableSpin(remainingTime) {
+        // ========== تفعيل زر التدوير ==========
+        function enableSpin() {
+            document.getElementById('spinBtn').disabled = false;
+            document.getElementById('timerBox').style.display = 'none';
+            if (countdownInterval) clearInterval(countdownInterval);
+        }
+
+        // ========== بدء العد التنازلي ==========
+        function startCountdown(remainingTime) {
             const spinBtn = document.getElementById('spinBtn');
             const timerBox = document.getElementById('timerBox');
+            
             spinBtn.disabled = true;
             timerBox.style.display = 'block';
 
-            const interval = setInterval(() => {
+            if (countdownInterval) clearInterval(countdownInterval);
+
+            countdownInterval = setInterval(() => {
                 if (remainingTime <= 0) {
-                    clearInterval(interval);
-                    spinBtn.disabled = false;
-                    timerBox.style.display = 'none';
-                    localStorage.removeItem(`lastSpin_${TELEGRAM_ID}`);
+                    clearInterval(countdownInterval);
+                    enableSpin();
                     return;
                 }
 
@@ -322,38 +339,53 @@
             }, 1000);
         }
 
+        // ========== اختيار جائزة حسب النسبة ==========
         function selectPrizeByProbability() {
             const random = Math.random() * 100;
             let cumulative = 0;
             
             for (const prize of prizes) {
                 cumulative += prize.probability;
-                if (random < cumulative) {
-                    return prize;
-                }
+                if (random < cumulative) return prize;
             }
             return prizes[0];
         }
 
+        // ========== حساب زاوية التوقف ==========
         function calculateStopAngle(prizeIndex) {
             const segmentAngle = 45;
             const pointerAngle = -90;
             const targetSegmentMidAngle = prizeIndex * segmentAngle + segmentAngle/2;
             let spinAngle = targetSegmentMidAngle - pointerAngle;
-            spinAngle += 1800;
+            spinAngle += 1800; // 5 لفات
             return spinAngle;
         }
 
-        function startSpin() {
+        // ========== بدء الدوران ==========
+        async function startSpin() {
             if (isSpinning) return;
 
-            const now = Date.now();
-            localStorage.setItem(`lastSpin_${TELEGRAM_ID}`, now);
-            lastSpinTime = now;
-
-            spinWheel();
+            // تسجيل وقت التدوير في Drive
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'saveSpin',
+                        telegramId: TELEGRAM_ID
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    spinWheel();
+                }
+            } catch (error) {
+                console.error('خطأ في تسجيل الوقت:', error);
+                spinWheel(); // في حالة خطأ، نسمح بالتدوير
+            }
         }
 
+        // ========== تدوير العجلة ==========
         function spinWheel() {
             isSpinning = true;
             document.getElementById('spinBtn').disabled = true;
@@ -366,15 +398,19 @@
             const wheel = document.getElementById('wheel');
             wheel.style.transform = `rotate(${spinDegrees}deg)`;
 
-            setTimeout(() => {
+            setTimeout(async () => {
                 document.getElementById('resultText').innerHTML = 
-                    selectedPrize.type === 'lose' ? '😢 <b>للأسف...' : '🎉 <b>مبروك! ربحت:</b>';
+                    selectedPrize.type === 'lose' ? '😢 <b>للأسف...</b>' : '🎉 <b>مبروك! ربحت:</b>';
                 document.getElementById('prizeValue').innerHTML = selectedPrize.text;
                 document.getElementById('resultBox').style.display = 'block';
 
-                savePrizeToDrive(selectedPrize);
-
+                // حفظ الجائزة
+                await savePrizeToDrive(selectedPrize);
+                
                 isSpinning = false;
+
+                // التحقق من الوقت مرة أخرى
+                await checkCanSpin();
 
                 setTimeout(() => {
                     wheel.style.transform = 'rotate(0deg)';
@@ -383,6 +419,7 @@
             }, 4000);
         }
 
+        // ========== حفظ الجائزة في Drive ==========
         async function savePrizeToDrive(prize) {
             try {
                 await fetch(API_URL, {
