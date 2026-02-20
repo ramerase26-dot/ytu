@@ -57,7 +57,6 @@
             border: 2px solid gold;
             font-size: 1.2em;
             box-shadow: 0 0 20px gold;
-            display: none;
         }
 
         .wheel-container {
@@ -214,11 +213,15 @@
             pointer-events: none;
             z-index: 5;
         }
+
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div id="timerBox" class="timer-box"></div>
+        <div id="timerBox" class="timer-box hidden"></div>
 
         <div class="wheel-container">
             <div class="glow-effect"></div>
@@ -250,7 +253,7 @@
 
     <script>
         // ========== الإعدادات ==========
-        const API_URL = 'https://script.google.com/macros/s/AKfycbxflwf3dgKDUQowETNGo8pBcbonLb4dq8aq7q2ot4NmXzvmhtfnkT4MXBETEM6Q6C2NWQ/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxbvYSu_DeiqSQzVOKHUX8ltFHo-Y_bs3SIpQZMCETzLlMQxJl_dP1S1Vm0mNG0tCw/exec';
         const TELEGRAM_ID = new URLSearchParams(window.location.search).get('user');
 
         // ========== الجوائز مع النسب ==========
@@ -279,7 +282,7 @@
             await checkCanSpin();
         };
 
-        // ========== التحقق من وقت آخر تدوير من Drive ==========
+        // ========== التحقق من وقت آخر تدوير ==========
         async function checkCanSpin() {
             try {
                 const response = await fetch(API_URL, {
@@ -299,17 +302,16 @@
                         startCountdown(data.remainingTime);
                     }
                 }
-                
             } catch (error) {
                 console.error('خطأ في التحقق:', error);
-                enableSpin(); // في حالة خطأ، نسمح بالتدوير
+                enableSpin();
             }
         }
 
-        // ========== تفعيل زر التدوير ==========
+        // ========== تفعيل الزر ==========
         function enableSpin() {
             document.getElementById('spinBtn').disabled = false;
-            document.getElementById('timerBox').style.display = 'none';
+            document.getElementById('timerBox').classList.add('hidden');
             if (countdownInterval) clearInterval(countdownInterval);
         }
 
@@ -319,7 +321,7 @@
             const timerBox = document.getElementById('timerBox');
             
             spinBtn.disabled = true;
-            timerBox.style.display = 'block';
+            timerBox.classList.remove('hidden');
 
             if (countdownInterval) clearInterval(countdownInterval);
 
@@ -346,7 +348,9 @@
             
             for (const prize of prizes) {
                 cumulative += prize.probability;
-                if (random < cumulative) return prize;
+                if (random < cumulative) {
+                    return prize;
+                }
             }
             return prizes[0];
         }
@@ -357,7 +361,7 @@
             const pointerAngle = -90;
             const targetSegmentMidAngle = prizeIndex * segmentAngle + segmentAngle/2;
             let spinAngle = targetSegmentMidAngle - pointerAngle;
-            spinAngle += 1800; // 5 لفات
+            spinAngle += 1800;
             return spinAngle;
         }
 
@@ -365,24 +369,20 @@
         async function startSpin() {
             if (isSpinning) return;
 
-            // تسجيل وقت التدوير في Drive
+            // تسجيل وقت التدوير
             try {
-                const response = await fetch(API_URL, {
+                await fetch(API_URL, {
                     method: 'POST',
                     body: JSON.stringify({
                         action: 'saveSpin',
                         telegramId: TELEGRAM_ID
                     })
                 });
-                
-                const data = await response.json();
-                if (data.success) {
-                    spinWheel();
-                }
             } catch (error) {
                 console.error('خطأ في تسجيل الوقت:', error);
-                spinWheel(); // في حالة خطأ، نسمح بالتدوير
             }
+
+            spinWheel();
         }
 
         // ========== تدوير العجلة ==========
@@ -419,7 +419,7 @@
             }, 4000);
         }
 
-        // ========== حفظ الجائزة في Drive ==========
+        // ========== حفظ الجائزة ==========
         async function savePrizeToDrive(prize) {
             try {
                 await fetch(API_URL, {
