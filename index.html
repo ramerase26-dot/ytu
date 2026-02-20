@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎡 عجلة الحظ</title>
+    <title>🎡 PIT Wheel</title>
     <style>
         * {
             margin: 0;
@@ -17,11 +17,26 @@
             justify-content: center;
             align-items: center;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a0b1f 0%, #2c0b3a 100%);
+            /* الصورة الخلفية */
+            background: url('https://i.postimg.cc/wB7MWQsq/IMG-20260129-003341-890.jpg') no-repeat center center fixed;
+            background-size: cover;
+            position: relative;
+        }
+
+        /* طبقة تغميق فوق الصورة */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6); /* درجة التغميق */
+            z-index: 0;
         }
 
         .container {
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.7);
             backdrop-filter: blur(5px);
             border-radius: 50px;
             padding: 20px;
@@ -29,6 +44,8 @@
             max-width: 500px;
             width: 90%;
             border: 2px solid #9b4dff;
+            position: relative;
+            z-index: 1;
         }
 
         .timer-box {
@@ -41,6 +58,7 @@
             font-weight: bold;
             border: 2px solid gold;
             font-size: 1.2em;
+            box-shadow: 0 0 20px gold;
         }
 
         .wheel-container {
@@ -56,7 +74,7 @@
             border-radius: 50%;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 30px #9b4dff;
             transition: transform 4s cubic-bezier(0.25, 0.1, 0.15, 1);
             border: 5px solid #9b4dff;
         }
@@ -73,12 +91,13 @@
             align-items: center;
             font-weight: bold;
             color: white;
-            text-shadow: 2px 2px 4px black;
-            font-size: 14px;
-            border: 1px solid rgba(255,255,255,0.2);
+            text-shadow: 0 0 10px gold, 0 0 20px gold;
+            font-size: 18px;
+            border: 1px solid rgba(255,215,0,0.3);
+            box-shadow: inset 0 0 15px rgba(255,215,0,0.3);
         }
 
-        /* 8 أجزاء للعجلة */
+        /* 8 أجزاء متساوية للعجلة */
         .segment:nth-child(1) { transform: rotate(0deg) skewY(22.5deg); background: #4a1d6d; }
         .segment:nth-child(2) { transform: rotate(45deg) skewY(22.5deg); background: #2c0b3a; }
         .segment:nth-child(3) { transform: rotate(90deg) skewY(22.5deg); background: #4a1d6d; }
@@ -90,8 +109,11 @@
 
         .segment span {
             transform: rotate(33.75deg) translate(30px, 0);
-            font-size: 14px;
+            font-size: 20px;
             font-weight: bold;
+            color: white;
+            text-shadow: 0 0 15px gold, 0 0 30px gold;
+            letter-spacing: 2px;
         }
 
         .pointer {
@@ -104,7 +126,7 @@
             border-left: 20px solid transparent;
             border-right: 20px solid transparent;
             border-top: 40px solid gold;
-            filter: drop-shadow(0 5px 5px black);
+            filter: drop-shadow(0 0 10px gold);
             z-index: 10;
         }
 
@@ -125,7 +147,7 @@
             font-size: 28px;
             font-weight: bold;
             border: 3px solid white;
-            box-shadow: 0 0 20px gold;
+            box-shadow: 0 0 30px gold, 0 0 60px gold;
         }
 
         .spin-btn {
@@ -141,29 +163,33 @@
             margin: 20px auto;
             display: block;
             width: 80%;
-            box-shadow: 0 5px 15px rgba(155, 77, 255, 0.6);
+            box-shadow: 0 5px 15px rgba(155, 77, 255, 0.6), 0 0 20px gold;
             border: 2px solid gold;
+            position: relative;
+            z-index: 1;
         }
 
         .spin-btn:hover:not(:disabled) {
             transform: scale(1.05);
-            box-shadow: 0 10px 25px gold;
+            box-shadow: 0 10px 25px rgba(155, 77, 255, 0.8), 0 0 30px gold;
         }
 
         .spin-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+            box-shadow: none;
         }
 
         .result-box {
             text-align: center;
             padding: 15px;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0,0,0,0.8);
             border-radius: 50px;
             margin-top: 20px;
             border: 2px solid gold;
             display: none;
             color: white;
+            box-shadow: 0 0 30px gold;
         }
 
         .prize-value {
@@ -171,13 +197,27 @@
             font-weight: bold;
             color: gold;
             margin-top: 5px;
+            text-shadow: 0 0 15px gold;
         }
 
         .footer {
             text-align: center;
             margin-top: 20px;
-            color: rgba(255,255,255,0.7);
+            color: rgba(255,255,255,0.9);
             font-size: 12px;
+        }
+
+        /* تأثير الإضاءة حول العجلة */
+        .glow-effect {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 50% 50%, rgba(255,215,0,0.2), transparent 70%);
+            pointer-events: none;
+            z-index: 5;
         }
     </style>
 </head>
@@ -186,21 +226,23 @@
         <div id="timerBox" class="timer-box" style="display: none;"></div>
 
         <div class="wheel-container">
+            <div class="glow-effect"></div>
             <div class="pointer"></div>
             <div class="wheel" id="wheel">
-                <div class="segment"><span>5000</span></div>
-                <div class="segment"><span>10000</span></div>
-                <div class="segment"><span>5%</span></div>
-                <div class="segment"><span>100k</span></div>
-                <div class="segment"><span>10%</span></div>
-                <div class="segment"><span>500k</span></div>
-                <div class="segment"><span>1M</span></div>
-                <div class="segment"><span>حظ</span></div>
+                <!-- كل الأجزاء تحتوي على نص "PIT" -->
+                <div class="segment"><span>PIT</span></div>
+                <div class="segment"><span>PIT</span></div>
+                <div class="segment"><span>PIT</span></div>
+                <div class="segment"><span>PIT</span></div>
+                <div class="segment"><span>PIT</span></div>
+                <div class="segment"><span>PIT</span></div>
+                <div class="segment"><span>PIT</span></div>
+                <div class="segment"><span>PIT</span></div>
             </div>
             <div class="center-dot" id="centerDot">🎡</div>
         </div>
 
-        <button class="spin-btn" id="spinBtn" onclick="startSpin()">🎲 ابدأ الدوران</button>
+        <button class="spin-btn" id="spinBtn" onclick="startSpin()">🎲 PIT</button>
 
         <div id="resultBox" class="result-box">
             <div id="resultText"></div>
@@ -220,22 +262,19 @@
 
         // ========== الجوائز مع النسب المحددة ==========
         const prizes = [
-            { text: '5000', value: 5000, type: 'points', probability: 15 },     // 50%
-            { text: '10000', value: 10000, type: 'points', probability: 10 },    // 0%
-            { text: '5%', value: 5, type: 'bonus', probability: 20 },            // 0%
-            { text: '100000', value: 100000, type: 'points', probability: 5 },   // 0%
-            { text: '10%', value: 10, type: 'bonus', probability: 10 },          // 0%
-            { text: '500000', value: 500000, type: 'points', probability: 3 },   // 0%
-            { text: '1000000', value: 1000000, type: 'points', probability: 2 }, // 50%
-            { text: 'حظ اوفر', value: 0, type: 'lose', probability: 35 }         // 0%
+            { text: '5000', value: 5000, type: 'points', probability: 15 },
+            { text: '10000', value: 10000, type: 'points', probability: 10 },
+            { text: '5%', value: 5, type: 'bonus', probability: 20 },
+            { text: '100000', value: 100000, type: 'points', probability: 5 },
+            { text: '10%', value: 10, type: 'bonus', probability: 10 },
+            { text: '500000', value: 500000, type: 'points', probability: 3 },
+            { text: '1000000', value: 1000000, type: 'points', probability: 2 },
+            { text: 'حظ اوفر', value: 0, type: 'lose', probability: 35 }
         ];
-        // مجموع probabilities = 100
 
-        // ========== متغيرات الحالة ==========
         let isSpinning = false;
         let lastSpinTime = localStorage.getItem(`lastSpin_${TELEGRAM_ID}`);
 
-        // ========== عند تحميل الصفحة ==========
         window.onload = function() {
             if (!TELEGRAM_ID) {
                 alert('❌ خطأ: لا يوجد معرف مستخدم');
@@ -245,7 +284,6 @@
             checkSpinCooldown();
         };
 
-        // ========== فحص وقت آخر تدوير ==========
         function checkSpinCooldown() {
             if (!lastSpinTime) return;
 
@@ -260,7 +298,6 @@
             }
         }
 
-        // ========== تعطيل الزر مع العد التنازلي ==========
         function disableSpin(remainingTime) {
             const spinBtn = document.getElementById('spinBtn');
             const timerBox = document.getElementById('timerBox');
@@ -285,7 +322,6 @@
             }, 1000);
         }
 
-        // ========== اختيار جائزة حسب النسبة ==========
         function selectPrizeByProbability() {
             const random = Math.random() * 100;
             let cumulative = 0;
@@ -296,35 +332,21 @@
                     return prize;
                 }
             }
-            return prizes[0]; // لو حصل خطأ
+            return prizes[0];
         }
 
-        // ========== حساب زاوية التوقف للجائزة المختارة ==========
         function calculateStopAngle(prizeIndex) {
-            // كل جزء يغطي 45 درجة (360/8 = 45)
-            // السهم يشير للأعلى (زاوية -90 درجة)
-            // نريد أن يكون منتصف الجزء المقابل للسهم
-            const segmentAngle = 45; // درجة لكل جزء
-            const pointerAngle = -90; // السهم للأعلى
-            
-            // نريد أن تكون الجائزة في منتصف الجزء تحت السهم
-            // زاوية منتصف الجزء i هي: i * segmentAngle + segmentAngle/2
+            const segmentAngle = 45;
+            const pointerAngle = -90;
             const targetSegmentMidAngle = prizeIndex * segmentAngle + segmentAngle/2;
-            
-            // المسافة التي يجب أن تدورها العجلة لتكون زاوية منتصف الجزء تحت السهم
             let spinAngle = targetSegmentMidAngle - pointerAngle;
-            
-            // نضيف لفات إضافية (5 لفات) عشان تدور بشكل جميل
-            spinAngle += 1800; // 5 لفات * 360
-            
+            spinAngle += 1800;
             return spinAngle;
         }
 
-        // ========== بدء الدوران ==========
         function startSpin() {
             if (isSpinning) return;
 
-            // حفظ وقت الدوران
             const now = Date.now();
             localStorage.setItem(`lastSpin_${TELEGRAM_ID}`, now);
             lastSpinTime = now;
@@ -332,37 +354,28 @@
             spinWheel();
         }
 
-        // ========== تدوير العجلة ==========
         function spinWheel() {
             isSpinning = true;
             document.getElementById('spinBtn').disabled = true;
             document.getElementById('resultBox').style.display = 'none';
 
-            // اختيار الجائزة حسب النسبة
             const selectedPrize = selectPrizeByProbability();
-            
-            // معرفة ترتيب الجائزة في مصفوفة prizes
             const prizeIndex = prizes.findIndex(p => p.text === selectedPrize.text);
-            
-            // حساب زاوية التوقف المناسبة
             const spinDegrees = calculateStopAngle(prizeIndex);
 
             const wheel = document.getElementById('wheel');
             wheel.style.transform = `rotate(${spinDegrees}deg)`;
 
             setTimeout(() => {
-                // عرض النتيجة
                 document.getElementById('resultText').innerHTML = 
                     selectedPrize.type === 'lose' ? '😢 <b>للأسف...' : '🎉 <b>مبروك! ربحت:</b>';
                 document.getElementById('prizeValue').innerHTML = selectedPrize.text;
                 document.getElementById('resultBox').style.display = 'block';
 
-                // حفظ الجائزة في Drive
                 savePrizeToDrive(selectedPrize);
 
                 isSpinning = false;
 
-                // إعادة العجلة لوضعها الأصلي بعد فترة (اختياري)
                 setTimeout(() => {
                     wheel.style.transform = 'rotate(0deg)';
                 }, 3000);
@@ -370,7 +383,6 @@
             }, 4000);
         }
 
-        // ========== حفظ الجائزة في Drive ==========
         async function savePrizeToDrive(prize) {
             try {
                 await fetch(API_URL, {
