@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎡 PIT Wheel</title>
     <style>
-        /* نفس التنسيقات السابقة */
         * {
             margin: 0;
             padding: 0;
@@ -23,6 +22,7 @@
             position: relative;
         }
 
+        /* طبقة شفافة خفيفة جداً */
         body::before {
             content: '';
             position: fixed;
@@ -30,16 +30,16 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.2); /* شفافية 20% فقط */
             z-index: 0;
         }
 
         .container {
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(5px);
+            background: rgba(0, 0, 0, 0.3); /* شفافية 30% */
+            backdrop-filter: blur(3px);
             border-radius: 50px;
             padding: 20px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
             max-width: 500px;
             width: 90%;
             border: 2px solid #9b4dff;
@@ -58,6 +58,7 @@
             border: 2px solid gold;
             font-size: 1.2em;
             box-shadow: 0 0 20px gold;
+            display: none;
         }
 
         .wheel-container {
@@ -96,6 +97,7 @@
             box-shadow: inset 0 0 15px rgba(255,215,0,0.3);
         }
 
+        /* 8 أجزاء متساوية تماماً - 45 درجة لكل جزء */
         .segment:nth-child(1) { transform: rotate(0deg) skewY(22.5deg); background: #4a1d6d; }
         .segment:nth-child(2) { transform: rotate(45deg) skewY(22.5deg); background: #2c0b3a; }
         .segment:nth-child(3) { transform: rotate(90deg) skewY(22.5deg); background: #4a1d6d; }
@@ -106,7 +108,7 @@
         .segment:nth-child(8) { transform: rotate(315deg) skewY(22.5deg); background: #2c0b3a; }
 
         .segment span {
-            transform: rotate(33.75deg) translate(30px, 0);
+            transform: rotate(33.75deg) translate(35px, 0);
             font-size: 20px;
             font-weight: bold;
             color: white;
@@ -196,11 +198,9 @@
             text-shadow: 0 0 15px gold;
         }
 
+        /* إخفاء النص السفلي */
         .footer {
-            text-align: center;
-            margin-top: 20px;
-            color: rgba(255,255,255,0.9);
-            font-size: 12px;
+            display: none;
         }
 
         .glow-effect {
@@ -215,23 +215,15 @@
             z-index: 5;
         }
 
+        /* لوحة الاختبار - مخفية للمستخدم */
         .test-panel {
-            background: rgba(0,0,0,0.5);
-            border-radius: 10px;
-            padding: 10px;
-            margin-top: 20px;
-            color: white;
-            font-size: 12px;
-            direction: ltr;
-            text-align: left;
-            max-height: 200px;
-            overflow: auto;
+            display: none;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div id="timerBox" class="timer-box" style="display: none;"></div>
+        <div id="timerBox" class="timer-box"></div>
 
         <div class="wheel-container">
             <div class="glow-effect"></div>
@@ -249,20 +241,11 @@
             <div class="center-dot" id="centerDot">🎡</div>
         </div>
 
-        <button class="spin-btn" id="spinBtn" onclick="startSpin()">🎲 PIT</button>
+        <button class="spin-btn" id="spinBtn" onclick="startSpin()" disabled>🎲 PIT</button>
 
         <div id="resultBox" class="result-box">
             <div id="resultText"></div>
             <div class="prize-value" id="prizeValue"></div>
-        </div>
-
-        <!-- لوحة اختبار -->
-        <div class="test-panel" id="testPanel">
-            <div>🔄 جاري التحميل...</div>
-        </div>
-
-        <div class="footer">
-            <p>🎁 مرة واحدة فقط كل 24 ساعة</p>
         </div>
     </div>
 
@@ -271,7 +254,7 @@
         const API_URL = 'https://script.google.com/macros/s/AKfycbyuL6-d9cQ9p0b6Azzq27PVWWVGbuMNs70lo4iN08tOUHfJ4pdz-K1fDQdpBJBzDbYj/exec';
         const TELEGRAM_ID = new URLSearchParams(window.location.search).get('user');
 
-        // ========== الجوائز ==========
+        // ========== الجوائز (مخفية تماماً عن المستخدم) ==========
         const prizes = [
             { text: '5000', value: 5000, type: 'points', probability: 15 },
             { text: '10000', value: 10000, type: 'points', probability: 10 },
@@ -286,51 +269,20 @@
         let isSpinning = false;
         let countdownInterval = null;
 
-        // ========== عرض في لوحة الاختبار ==========
-        function logToPanel(message) {
-            const panel = document.getElementById('testPanel');
-            panel.innerHTML = message + '<br>' + panel.innerHTML;
-            console.log(message);
-        }
-
-        // ========== اختبار الاتصال ==========
-        async function testConnection() {
-            try {
-                logToPanel('🔍 جاري اختبار الاتصال...');
-                
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'test' })
-                });
-                
-                const data = await response.json();
-                logToPanel('✅ اتصال ناجح: ' + JSON.stringify(data));
-                
-            } catch (error) {
-                logToPanel('❌ فشل الاتصال: ' + error);
-            }
-        }
-
         // ========== عند تحميل الصفحة ==========
         window.onload = async function() {
-            logToPanel('🚀 تم تحميل الصفحة');
-            logToPanel('👤 معرف المستخدم: ' + TELEGRAM_ID);
-            
             if (!TELEGRAM_ID) {
-                logToPanel('❌ خطأ: لا يوجد معرف مستخدم');
-                document.getElementById('spinBtn').disabled = true;
+                alert('❌ خطأ: لا يوجد معرف مستخدم');
                 return;
             }
             
-            await testConnection();
+            // التحقق من الوقت قبل تمكين الزر
             await checkCanSpin();
         };
 
         // ========== التحقق من وقت آخر تدوير ==========
         async function checkCanSpin() {
             try {
-                logToPanel('🔍 التحقق من وقت التدوير...');
-                
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     body: JSON.stringify({
@@ -340,24 +292,24 @@
                 });
                 
                 const data = await response.json();
-                logToPanel('📥 رد canSpin: ' + JSON.stringify(data));
                 
                 if (data.success) {
                     if (data.canSpin) {
                         enableSpin();
-                        logToPanel('✅ يمكنك التدوير');
                     } else {
                         startCountdown(data.remainingTime);
-                        logToPanel('⏳ ممنوع التدوير: ' + data.message);
                     }
+                } else {
+                    // في حالة خطأ، نعطل الزر
+                    document.getElementById('spinBtn').disabled = true;
                 }
             } catch (error) {
-                logToPanel('❌ خطأ في التحقق: ' + error);
-                enableSpin();
+                console.error('خطأ في التحقق:', error);
+                document.getElementById('spinBtn').disabled = true;
             }
         }
 
-        // ========== تفعيل الزر ==========
+        // ========== تفعيل الزر - فقط هنا يمكن الضغط ==========
         function enableSpin() {
             document.getElementById('spinBtn').disabled = false;
             document.getElementById('timerBox').style.display = 'none';
@@ -390,7 +342,7 @@
             }, 1000);
         }
 
-        // ========== اختيار جائزة ==========
+        // ========== اختيار جائزة حسب النسبة ==========
         function selectPrizeByProbability() {
             const random = Math.random() * 100;
             let cumulative = 0;
@@ -404,13 +356,20 @@
             return prizes[0];
         }
 
-        // ========== حساب زاوية التوقف ==========
+        // ========== حساب زاوية التوقف بدقة ==========
         function calculateStopAngle(prizeIndex) {
-            const segmentAngle = 45;
-            const pointerAngle = -90;
+            const segmentAngle = 45; // 360/8 = 45 درجة لكل جزء
+            const pointerAngle = -90; // السهم للأعلى
+            
+            // زاوية منتصف الجزء المطلوب
             const targetSegmentMidAngle = prizeIndex * segmentAngle + segmentAngle/2;
+            
+            // المسافة التي يجب أن تدورها العجلة
             let spinAngle = targetSegmentMidAngle - pointerAngle;
-            spinAngle += 1800;
+            
+            // إضافة 5 لفات لجعل الدوران جميلاً
+            spinAngle += 1800; // 5 لفات * 360
+            
             return spinAngle;
         }
 
@@ -418,23 +377,20 @@
         async function startSpin() {
             if (isSpinning) return;
 
-            logToPanel('🎲 بدء التدوير...');
+            // تعطيل الزر فور الضغط
+            document.getElementById('spinBtn').disabled = true;
 
-            // تسجيل وقت التدوير
+            // تسجيل وقت التدوير في Drive
             try {
-                const response = await fetch(API_URL, {
+                await fetch(API_URL, {
                     method: 'POST',
                     body: JSON.stringify({
                         action: 'saveSpin',
                         telegramId: TELEGRAM_ID
                     })
                 });
-                
-                const data = await response.json();
-                logToPanel('📥 رد saveSpin: ' + JSON.stringify(data));
-                
             } catch (error) {
-                logToPanel('❌ خطأ في تسجيل الوقت: ' + error);
+                console.error('خطأ في تسجيل الوقت:', error);
             }
 
             spinWheel();
@@ -443,14 +399,11 @@
         // ========== تدوير العجلة ==========
         function spinWheel() {
             isSpinning = true;
-            document.getElementById('spinBtn').disabled = true;
             document.getElementById('resultBox').style.display = 'none';
 
             const selectedPrize = selectPrizeByProbability();
             const prizeIndex = prizes.findIndex(p => p.text === selectedPrize.text);
             const spinDegrees = calculateStopAngle(prizeIndex);
-
-            logToPanel('🎁 الجائزة المختارة: ' + selectedPrize.text);
 
             const wheel = document.getElementById('wheel');
             wheel.style.transform = `rotate(${spinDegrees}deg)`;
@@ -461,10 +414,12 @@
                 document.getElementById('prizeValue').innerHTML = selectedPrize.text;
                 document.getElementById('resultBox').style.display = 'block';
 
-                // حفظ الجائزة
+                // حفظ الجائزة في Drive
                 await savePrizeToDrive(selectedPrize);
                 
                 isSpinning = false;
+
+                // التحقق من الوقت مرة أخرى
                 await checkCanSpin();
 
                 setTimeout(() => {
@@ -474,12 +429,10 @@
             }, 4000);
         }
 
-        // ========== حفظ الجائزة - مع تصحيح ==========
+        // ========== حفظ الجائزة في Drive ==========
         async function savePrizeToDrive(prize) {
-            logToPanel('📤 محاولة حفظ الجائزة: ' + prize.text);
-            
             try {
-                const response = await fetch(API_URL, {
+                await fetch(API_URL, {
                     method: 'POST',
                     body: JSON.stringify({
                         action: 'savePrize',
@@ -487,18 +440,8 @@
                         prize: prize
                     })
                 });
-                
-                const data = await response.json();
-                logToPanel('📥 رد savePrize: ' + JSON.stringify(data));
-                
-                if (data.success) {
-                    logToPanel('✅ تم حفظ الجائزة بنجاح');
-                } else {
-                    logToPanel('❌ فشل حفظ الجائزة: ' + data.error);
-                }
-                
             } catch (error) {
-                logToPanel('❌ خطأ في حفظ الجائزة: ' + error);
+                console.error('خطأ في حفظ الجائزة:', error);
             }
         }
     </script>
