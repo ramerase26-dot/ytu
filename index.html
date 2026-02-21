@@ -5,8 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎡 PIT Wheel</title>
     <style>
-        /* جميع التنسيقات الأصلية تم الحفاظ عليها بالكامل */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             min-height: 100vh;
             display: flex;
@@ -17,15 +21,21 @@
             background-size: cover;
             position: relative;
         }
+
+        /* طبقة شفافة خفيفة جداً */
         body::before {
             content: '';
             position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.2);
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.2); /* شفافية 20% فقط */
             z-index: 0;
         }
+
         .container {
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 0.3); /* شفافية 30% */
             backdrop-filter: blur(3px);
             border-radius: 50px;
             padding: 20px;
@@ -36,6 +46,7 @@
             position: relative;
             z-index: 1;
         }
+
         .timer-box {
             background: linear-gradient(135deg, #4a1d6d, #2c0b3a);
             color: white;
@@ -49,12 +60,14 @@
             box-shadow: 0 0 20px gold;
             display: none;
         }
+
         .wheel-container {
             position: relative;
             width: 280px;
             height: 280px;
             margin: 20px auto;
         }
+
         .wheel {
             width: 100%;
             height: 100%;
@@ -65,6 +78,7 @@
             transition: transform 4s cubic-bezier(0.25, 0.1, 0.15, 1);
             border: 5px solid #9b4dff;
         }
+
         .segment {
             position: absolute;
             width: 50%;
@@ -82,6 +96,8 @@
             border: 1px solid rgba(255,215,0,0.3);
             box-shadow: inset 0 0 15px rgba(255,215,0,0.3);
         }
+
+        /* 8 أجزاء متساوية تماماً - 45 درجة لكل جزء */
         .segment:nth-child(1) { transform: rotate(0deg) skewY(45deg); background: #4a1d6d; }
         .segment:nth-child(2) { transform: rotate(45deg) skewY(45deg); background: #2c0b3a; }
         .segment:nth-child(3) { transform: rotate(90deg) skewY(45deg); background: #4a1d6d; }
@@ -90,31 +106,37 @@
         .segment:nth-child(6) { transform: rotate(225deg) skewY(45deg); background: #2c0b3a; }
         .segment:nth-child(7) { transform: rotate(270deg) skewY(45deg); background: #4a1d6d; }
         .segment:nth-child(8) { transform: rotate(315deg) skewY(45deg); background: #2c0b3a; }
+
         .segment span {
-            transform: rotate(45deg) translate(45px, 0);
+            transform: rotate(45deg) translate(45px, 0); /* غير 33.75 إلى 45 */
             font-size: 20px;
             font-weight: bold;
             color: white;
             text-shadow: 0 0 15px gold, 0 0 30px gold;
             letter-spacing: 2px;
-        }
+}
+
         .pointer {
             position: absolute;
             top: -15px;
             left: 50%;
             transform: translateX(-50%);
-            width: 0; height: 0;
+            width: 0;
+            height: 0;
             border-left: 20px solid transparent;
             border-right: 20px solid transparent;
             border-top: 40px solid gold;
             filter: drop-shadow(0 0 10px gold);
             z-index: 10;
         }
+
         .center-dot {
             position: absolute;
-            top: 50%; left: 50%;
+            top: 50%;
+            left: 50%;
             transform: translate(-50%, -50%);
-            width: 60px; height: 60px;
+            width: 60px;
+            height: 60px;
             background: linear-gradient(135deg, gold, #ffa500);
             border-radius: 50%;
             z-index: 20;
@@ -127,6 +149,7 @@
             border: 3px solid white;
             box-shadow: 0 0 30px gold, 0 0 60px gold;
         }
+
         .spin-btn {
             background: linear-gradient(135deg, #9b4dff, #6a1b9a);
             color: white;
@@ -143,15 +166,18 @@
             box-shadow: 0 5px 15px rgba(155, 77, 255, 0.6), 0 0 20px gold;
             border: 2px solid gold;
         }
+
         .spin-btn:hover:not(:disabled) {
             transform: scale(1.05);
             box-shadow: 0 10px 25px rgba(155, 77, 255, 0.8), 0 0 30px gold;
         }
+
         .spin-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
             box-shadow: none;
         }
+
         .result-box {
             text-align: center;
             padding: 15px;
@@ -163,6 +189,7 @@
             color: white;
             box-shadow: 0 0 30px gold;
         }
+
         .prize-value {
             font-size: 32px;
             font-weight: bold;
@@ -170,20 +197,34 @@
             margin-top: 5px;
             text-shadow: 0 0 15px gold;
         }
-        .footer { display: none; }
+
+        /* إخفاء النص السفلي */
+        .footer {
+            display: none;
+        }
+
         .glow-effect {
             position: absolute;
-            top: -10px; left: -10px; right: -10px; bottom: -10px;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
             border-radius: 50%;
             background: radial-gradient(circle at 50% 50%, rgba(255,215,0,0.2), transparent 70%);
             pointer-events: none;
             z-index: 5;
+        }
+
+        /* لوحة الاختبار - مخفية للمستخدم */
+        .test-panel {
+            display: none;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div id="timerBox" class="timer-box"></div>
+
         <div class="wheel-container">
             <div class="glow-effect"></div>
             <div class="pointer"></div>
@@ -199,7 +240,9 @@
             </div>
             <div class="center-dot" id="centerDot">🎡</div>
         </div>
+
         <button class="spin-btn" id="spinBtn" onclick="startSpin()" disabled>🎲 PIT</button>
+
         <div id="resultBox" class="result-box">
             <div id="resultText"></div>
             <div class="prize-value" id="prizeValue"></div>
@@ -207,9 +250,11 @@
     </div>
 
     <script>
-        const API_URL = 'https://script.google.com/macros/s/AKfycbyleDtobKkaV7Ki3DtB6_PZK3WEGT3PUoh8vspTHK4K0luWiiWhUen4pQ8vykMkuD2x8Q/exec';
+        // ========== الإعدادات ==========
+        const API_URL = 'https://script.google.com/macros/s/AKfycby439UeZct7BDSpUbb9PJDRkj1mVh9cvMHvcXqc-6Q-M2yIq88fykdkuDXi-bq5xJ_O/exec';
         const TELEGRAM_ID = new URLSearchParams(window.location.search).get('user');
 
+        // ========== الجوائز (مخفية تماماً عن المستخدم) ==========
         const prizes = [
             { text: '5000', value: 5000, type: 'points', probability: 1 },
             { text: 'حظ اوفر', value: 0, type: 'lose', probability: 16 },
@@ -222,28 +267,40 @@
         ];
 
         let isSpinning = false;
-        let isProcessingPrize = false; // القفل الجديد لمنع التكرار
         let countdownInterval = null;
 
+        // ========== عند تحميل الصفحة ==========
         window.onload = async function() {
             if (!TELEGRAM_ID) {
                 alert('❌ خطأ: لا يوجد معرف مستخدم');
                 return;
             }
+            
+            // التحقق من الوقت قبل تمكين الزر
             await checkCanSpin();
         };
 
+        // ========== التحقق من وقت آخر تدوير ==========
         async function checkCanSpin() {
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'canSpin', telegramId: TELEGRAM_ID })
+                    body: JSON.stringify({
+                        action: 'canSpin',
+                        telegramId: TELEGRAM_ID
+                    })
                 });
+                
                 const data = await response.json();
+                
                 if (data.success) {
-                    if (data.canSpin) { enableSpin(); } 
-                    else { startCountdown(data.remainingTime); }
+                    if (data.canSpin) {
+                        enableSpin();
+                    } else {
+                        startCountdown(data.remainingTime);
+                    }
                 } else {
+                    // في حالة خطأ، نعطل الزر
                     document.getElementById('spinBtn').disabled = true;
                 }
             } catch (error) {
@@ -252,72 +309,102 @@
             }
         }
 
+        // ========== تفعيل الزر - فقط هنا يمكن الضغط ==========
         function enableSpin() {
             document.getElementById('spinBtn').disabled = false;
             document.getElementById('timerBox').style.display = 'none';
             if (countdownInterval) clearInterval(countdownInterval);
         }
 
+        // ========== بدء العد التنازلي ==========
         function startCountdown(remainingTime) {
             const spinBtn = document.getElementById('spinBtn');
             const timerBox = document.getElementById('timerBox');
+            
             spinBtn.disabled = true;
             timerBox.style.display = 'block';
+
             if (countdownInterval) clearInterval(countdownInterval);
+
             countdownInterval = setInterval(() => {
                 if (remainingTime <= 0) {
                     clearInterval(countdownInterval);
                     enableSpin();
                     return;
                 }
+
                 const hours = Math.floor(remainingTime / (60 * 60 * 1000));
                 const minutes = Math.floor((remainingTime % (60 * 60 * 1000)) / (60 * 1000));
                 const seconds = Math.floor((remainingTime % (60 * 1000)) / 1000);
+
                 timerBox.innerHTML = `⏳ الوقت المتبقي: ${hours}h ${minutes}m ${seconds}s`;
                 remainingTime -= 1000;
             }, 1000);
         }
 
+        // ========== اختيار جائزة حسب النسبة ==========
         function selectPrizeByProbability() {
             const random = Math.random() * 100;
             let cumulative = 0;
+            
             for (const prize of prizes) {
                 cumulative += prize.probability;
-                if (random < cumulative) return prize;
+                if (random < cumulative) {
+                    return prize;
+                }
             }
             return prizes[0];
         }
 
+        // ========== حساب زاوية التوقف بدقة ==========
         function calculateStopAngle(prizeIndex) {
-            const segmentAngle = 45;
-            const pointerAngle = -90;
+            const segmentAngle = 45; // 360/8 = 45 درجة لكل جزء
+            const pointerAngle = -90; // السهم للأعلى
+            
+            // زاوية منتصف الجزء المطلوب
             const targetSegmentMidAngle = prizeIndex * segmentAngle + segmentAngle/2;
+            
+            // المسافة التي يجب أن تدورها العجلة
             let spinAngle = targetSegmentMidAngle - pointerAngle;
-            spinAngle += 1800;
+            
+            // إضافة 5 لفات لجعل الدوران جميلاً
+            spinAngle += 1800; // 5 لفات * 360
+            
             return spinAngle;
         }
 
+        // ========== بدء الدوران ==========
         async function startSpin() {
             if (isSpinning) return;
-            isProcessingPrize = false; // تصفير القفل عند كل دورة جديدة
+
+            // تعطيل الزر فور الضغط
             document.getElementById('spinBtn').disabled = true;
+
+            // تسجيل وقت التدوير في Drive
             try {
                 await fetch(API_URL, {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'saveSpin', telegramId: TELEGRAM_ID })
+                    body: JSON.stringify({
+                        action: 'saveSpin',
+                        telegramId: TELEGRAM_ID
+                    })
                 });
             } catch (error) {
                 console.error('خطأ في تسجيل الوقت:', error);
             }
+
             spinWheel();
         }
 
+        // ========== تدوير العجلة ==========
         function spinWheel() {
             isSpinning = true;
             document.getElementById('resultBox').style.display = 'none';
+
             const selectedPrize = selectPrizeByProbability();
             const prizeIndex = prizes.findIndex(p => p.text === selectedPrize.text);
             const spinDegrees = calculateStopAngle(prizeIndex);
+
             const wheel = document.getElementById('wheel');
             wheel.style.transform = `rotate(${spinDegrees}deg)`;
 
@@ -327,22 +414,25 @@
                 document.getElementById('prizeValue').innerHTML = selectedPrize.text;
                 document.getElementById('resultBox').style.display = 'block';
 
-                // حفظ الجائزة مع الحماية من التكرار
+                // حفظ الجائزة في Drive
                 await savePrizeToDrive(selectedPrize);
                 
                 isSpinning = false;
+
+                // التحقق من الوقت مرة أخرى
                 await checkCanSpin();
-                setTimeout(() => { wheel.style.transform = 'rotate(0deg)'; }, 3000);
+
+                setTimeout(() => {
+                    wheel.style.transform = 'rotate(0deg)';
+                }, 3000);
+
             }, 4000);
         }
 
+        // ========== حفظ الجائزة في Drive ==========
         async function savePrizeToDrive(prize) {
-            // التحقق من القفل: إذا تم الإرسال مسبقاً لهذه الدورة، نخرج فوراً
-            if (isProcessingPrize) return;
-            isProcessingPrize = true; // تفعيل القفل فوراً
-
             try {
-                const response = await fetch(API_URL, {
+                await fetch(API_URL, {
                     method: 'POST',
                     body: JSON.stringify({
                         action: 'savePrize',
@@ -350,14 +440,8 @@
                         prize: prize
                     })
                 });
-                const data = await response.json();
-                if (!data.success) {
-                    // إذا فشل السيرفر، نسمح بإعادة المحاولة (اختياري)
-                    isProcessingPrize = false; 
-                }
             } catch (error) {
                 console.error('خطأ في حفظ الجائزة:', error);
-                isProcessingPrize = false; // السماح بإعادة المحاولة في حال وجود خطأ في الشبكة
             }
         }
     </script>
